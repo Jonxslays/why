@@ -1,0 +1,233 @@
+/*
+// ********************************
+//
+// Variables and basic types
+//
+// ********************************
+*/
+
+// Integer
+#w: int = -69;
+
+// Unsigned integer
+#x: uint = 420;
+
+// Floating point
+#y: float = -3.50;
+
+// Unsigned floating point
+#z: ufloat = 3.50;
+
+// String
+#a: string = "123";
+
+// A null value, the type of which is void
+#nothing: void = NULL;
+
+// Deleting a variable (or function or class) from memory
+a@->!;
+nothing@->!;
+z@->!;
+
+/*
+// ********************************
+//
+// Constants
+//
+// ********************************
+*/
+
+// A constant value
+#!my_constant: int! = 69420;
+
+// A constant array or strings, the array can never be mutated
+#!my_constant_array: array@string! = ["this", "cant", "be", "changed"];
+
+/*
+// ********************************
+//
+// Arrays
+//
+// ********************************
+*/
+
+// An Array of strings and integers
+#list: array@string|int = [1, "two", 3];
+
+// Access the first element of the array
+#element_one: int = list[0];
+// or
+#element_one_: int = list@0;
+
+// a array that can contain strings, or arrays of ints
+#list_of_lists: array@(array@int)| = [[4, 2, 0], "hello"];
+#list_of_lists2: array@string|array@int = [[6, 9], "world"];
+
+/*
+// ********************************
+//
+// Mappings
+//
+// ********************************
+*/
+
+// A mapping of string keys to integer values
+// semicolon can not be left off in an assignment
+#my_map: mapping@string->int = &{
+    "Hello"->1234,
+    "world"->69420,
+};
+
+// Access an element of the mapping
+#element1: int = my_map["Hello"];
+// or
+#element1_: int = my_map@"hello";
+// Access with the get method, and return a default of 0 if not found
+#element2: int = my_map.get("world", 0);
+
+/*
+// ********************************
+//
+// Functions
+//
+// ********************************
+*/
+
+// Accepts an int, a string, and a list of strings, returns a string
+// Prefix values with `_` if you don't plan to use it
+// @ returns a value
+$main(num1: int, name: string, _values: array@string) @string {
+    @"Hello {name}, the number was {num1}";
+}
+
+// Accepts a mapping of string to int and returns the same
+$func1(data: mapping@string->int) @mapping@string->int {
+    @data;
+}
+
+// Accepts no args and returns an integer
+$no_args() @int {
+    @3;
+}
+
+// Accepts an optional name
+$hello(name: string?) @void {
+    name? -> {
+        print("Hello, {name}!");
+    } !-> {
+        print("Hello, there!");
+    }
+}
+
+// Function that accepts another function as a param
+// and returns its value
+$accepts_func_with_no_args(f: $()@int) @int {
+    @f();
+}
+
+// Another example of the above
+$accepts_func_with_one_arg(f: $(mapping@string->int))
+@mapping@string->int {
+    #my_map = &{
+        "hello": "world",
+        "goodbye": "world",
+    };
+
+    @f(my_map);
+}
+
+// Anonymous functions as a variable
+#anonymous_func: $@int = $()@int {
+    @69420;
+}
+
+// Calling the function
+anonymous_func();
+
+/*
+// ********************************
+//
+// Builtin functions
+//
+// ********************************
+*/
+
+// Built in functions can be called with and without %
+print("Hello world");
+%print("Hello, world!");
+
+// If you write your own function called print
+// You can still use the builtin by including the %
+$print(message: string) @void {
+    %print("Our print says {message}!");
+}
+
+print("woo");
+// Prints: `Our print says woo`
+
+/*
+// ********************************
+//
+// Classes
+//
+// ********************************
+*/
+
+// A class with no attributes
+// Semicolon can be left off
+&SomeClass {}
+
+// Creating an instance of SomeClass, note the type hint can be left
+// off but is included to be explicit
+#object: &SomeClass = &SomeClass();
+
+// A class animal with one property, an unsigned int age
+&Animal {
+    #age: uint;
+}
+
+// A class Person that inherits from Animal
+// It has a first, middle and last name
+// Notice the private and protected properties
+&Person is &Animal {
+    #first_name: string;
+    #middle_name: private string = "Unknown";
+    #last_name: protected string;
+
+    // An instance method
+    // Returns nothing but prints the full name
+    $print_name(&self) @void {
+        print(self.first_name, self.middle_name, self.last_name);
+    }
+
+    // An instance method
+    // Returns a bool indicating whether or not the age is at least 21
+    $is_twenty_one(&self) @bool {
+        @self.age >= 21;
+    }
+
+    // A static method can be called without instantiating
+    // Returns an int
+    $return_420() @int {
+        @420;
+    }
+}
+
+#jonx = &Person(
+    #age = 23;
+    #first_name = "Jon";
+    #last_name = "xslays";
+)
+
+jonx.print_name();
+
+// Note that static methods must use the `:` to be accessed
+%print(jonx:return_420());
+// Also valid
+%print(&Person:return_420());
+
+%print(jonx.age);
+%print(jonx.first_name);
+
+%print(jonx.last_name); // Errors (protected)
+%print(jonx.middle_name); // Errors (private)

@@ -1,0 +1,34 @@
+#list: array@int = [1, 2, 3, 4, 5, 6, 7];
+#dict: mapping@int->int = &{ 1->2, 3->4 };
+
+// Iterate each item in the list
+// equivalent to for each loops
+for (list@->item) {
+    %print("{item}");
+}
+
+// Iterate from 1 to 20 exclusive
+for (1->20@->number) {
+    %print("{number}");
+}
+
+// Iterate from 1 to 20 inclusive
+for (1=>20@->number) {
+    %print("{number}");
+}
+
+// Iterate the mapping keys and access each element
+for (dict@->key) {
+    %print("{dict@key}");
+    // or
+    %print("{dict[key]}");
+    // or
+    %print("{dict.get(key)}")
+    // Keep in mind this last one can return NULL
+}
+
+// Iterate the mapping keys and values simultaneously
+for (dict@=>(key, value)) {
+    %print("{key}");
+    %print("{value}");
+}
