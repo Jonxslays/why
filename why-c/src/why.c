@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include "test.h"
+#include "lexer.h"
+#include "why.h"
 
-int main() {
-    printer();
-    return 0;
+void compile_why_source(char *src) {
+    Lexer *lexer = lexer_init(src);
+    free(lexer);
 }
