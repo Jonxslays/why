@@ -176,6 +176,7 @@ cython_debug/
 *.a
 *.la
 *.lo
+!why-rs/**/lib
 
 # Shared objects (inc. Windows DLLs)
 *.dll

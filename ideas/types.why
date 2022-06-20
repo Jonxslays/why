@@ -21,8 +21,40 @@
 // String
 #a: string = "123";
 
+// A boolean
+#t: bool = true;
+
 // A null value, the type of which is void
 #nothing: void = NULL;
+
+/*
+// ********************************
+//
+// Maybe????
+//
+// ********************************
+*/
+
+// Integer
+int w = -69;
+
+// Unsigned integer
+uint x = 420;
+
+// Floating point
+float y = -3.50;
+
+// Unsigned floating point
+ufloat z = 3.50;
+
+// String
+string a = "123";
+
+// A boolean
+bool t = true;
+
+// A null value, the type of which is void
+void nothing = NULL;
 
 // Deleting a variable (or function or class) from memory
 a@->!;
