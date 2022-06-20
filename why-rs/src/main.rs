@@ -1,12 +1,10 @@
-use std::env;
+use why_rs::Lexer;
+use why_rs::utils;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = utils::collect_cli_args();
+    let src = utils::read_source_file(&args[1]);
+    let lexer = Lexer::new(src);
 
-    if args.len() < 2 {
-        println!("Missing required argument: the file to compile.");
-        std::process::exit(1);
-    }
-
-    println!("Hello, world!");
+    println!("{}", lexer.peek(5));
 }

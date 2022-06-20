@@ -1,3 +1,4 @@
+#[derive(Clone, Debug)]
 pub enum TokenType {
     Eof,
     Ident,
@@ -34,8 +35,19 @@ pub enum TokenType {
     Percent,
 }
 
+#[derive(Clone, Debug)]
 pub struct Token {
-    typ: TokenType,
-    value: Option<String>,
-    addtl: Option<Vec<String>>,
+    pub typ: TokenType,
+    pub value: Option<String>,
+    pub addtl: Option<Vec<String>>,
+}
+
+impl Token {
+    pub fn new(typ: TokenType) -> Self {
+        Self { typ, value: None, addtl: None }
+    }
+
+    pub fn with_value(typ: TokenType, value: String) -> Self {
+        Self { typ, value: Some(value), addtl: None }
+    }
 }
