@@ -6,6 +6,7 @@ BIN=why-c/bin
 EXE=$(BIN)/why
 CFLAGS=-Wall -Wextra -Werror -pedantic -std=c11 -I$(INC)
 PROD_FLAGS=-s -static -O3 $(CFLAGS)
+TARGET=tests/vars.why
 
 SRCS=$(wildcard $(SRC)/*.c)
 INCS=$(wildcard $(INC)/*.h)
@@ -21,7 +22,7 @@ prod: $(OBJS) $(INCS)
 	$(CC) $(PROD_FLAGS) $^ -o $(EXE)
 
 run:
-	@./$(EXE)
+	@./$(EXE) $(TARGET)
 
 clean:
 	rm -f $(BIN)/* $(OBJ)/*

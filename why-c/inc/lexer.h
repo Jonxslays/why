@@ -20,6 +20,8 @@ void lexer_next(Lexer *lexer);
 
 void lexer_skip_whitespace(Lexer *lexer);
 
+void lexer_skip_comment(Lexer *lexer, short int *multiline);
+
 Token *lexer_lex_next(Lexer *lexer);
 
 Token *lexer_next_with(Lexer *lexer, Token *token);
@@ -27,5 +29,9 @@ Token *lexer_next_with(Lexer *lexer, Token *token);
 Token *lexer_parse_ident(Lexer *lexer);
 
 Token *lexer_parse_typehint(Lexer *lexer);
+
+Token *lexer_parse_assignment_expr(Lexer *lexer);
+
+Token *lexer_parse_integer(Lexer *lexer);
 
 #endif

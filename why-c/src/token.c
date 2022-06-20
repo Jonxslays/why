@@ -13,3 +13,8 @@ Token *token_init(char *value, int type) {
     debug_print_token(token);
     return token;
 }
+
+char *token_to_string(char *buffer, Token *token) {
+    sprintf(buffer, "Token(type: %d, value: %s)", token->type, token->value);
+    return buffer;
+}

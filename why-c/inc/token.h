@@ -3,6 +3,7 @@
 
 typedef struct {
     enum {
+        TOKEN_EOF,
         TOKEN_IDENT,
         TOKEN_STRING,
         TOKEN_INT,
@@ -36,11 +37,12 @@ typedef struct {
         TOKEN_QUESTION_MARK,
         TOKEN_PERCENT,
         TOKEN_TYPEHINT,
-        TOKEN_EOF,
     } type;
     char *value;
 } Token;
 
 Token *token_init(char *value, int type);
+
+char *token_to_string(char *buffer, Token *token);
 
 #endif

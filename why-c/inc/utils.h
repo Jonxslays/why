@@ -16,6 +16,8 @@ void validate_ptr(void *ptr);
 
 void debug_print_token(Token *token);
 
+int is_newline(char c);
+
 int is_whitespace(char c);
 
 #endif
