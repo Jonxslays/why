@@ -1,9 +1,9 @@
-#include <ctype.h>
-#include <string.h>
-
 #include "lexer.h"
 #include "token.h"
 #include "utils.h"
+#include <ctype.h>
+#include <string.h>
+
 
 Lexer *lexer_init(char *src) {
     Lexer *lexer = calloc(1, sizeof(Lexer));

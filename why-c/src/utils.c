@@ -1,8 +1,8 @@
+#include "token.h"
+#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "token.h"
-#include "utils.h"
 
 void validate_ptr(void *ptr) {
     if (ptr == NULL) {
