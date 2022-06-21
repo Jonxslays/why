@@ -23,41 +23,41 @@ macro_rules! exc {
         std::process::exit(1);
     }};
 
-    ($lexer:ident, $msg:literal) => {{
-        eprintln!("Error! {}", format!(
-            "line {}, column {}:\n{}",
-            $lexer.line, $lexer.col, $msg,
-        ));
+    // ($lexer:ident, $msg:literal) => {{
+    //     eprintln!("Error! {}", format!(
+    //         "line {}, column {}:\n{}",
+    //         $lexer.line, $lexer.col, $msg,
+    //     ));
 
-        std::process::exit(1);
-    }};
+    //     std::process::exit(1);
+    // }};
 
-    ($lexer:ident, $msg:literal, $($args:ident),*) => {{
-        eprintln!("Error! {}", format!(
-            "line {}, column {}:\n{}",
-            $lexer.line, $lexer.col, format!($msg, $($args),*)
-        ));
+    // ($lexer:ident, $msg:literal, $($args:ident),*) => {{
+    //     eprintln!("Error! {}", format!(
+    //         "line {}, column {}:\n{}",
+    //         $lexer.line, $lexer.col, format!($msg, $($args),*)
+    //     ));
 
-        std::process::exit(1);
-    }};
+    //     std::process::exit(1);
+    // }};
 
-    ($lexer:ident, $msg:literal, $($args:literal),*) => {{
-        eprintln!("Error! {}", format!(
-            "line {}, column {}:\n{}",
-            $lexer.line, $lexer.col, format!($msg, $($args),*)
-        ));
+    // ($lexer:ident, $msg:literal, $($args:literal),*) => {{
+    //     eprintln!("Error! {}", format!(
+    //         "line {}, column {}:\n{}",
+    //         $lexer.line, $lexer.col, format!($msg, $($args),*)
+    //     ));
 
-        std::process::exit(1);
-    }};
+    //     std::process::exit(1);
+    // }};
 
-    ($lexer:ident, $msg:literal, $($args:expr),*) => {{
-        eprintln!("Error! {}", format!(
-            "line {}, column {}:\n{}",
-            $lexer.line, $lexer.col, format!($msg, $($args),*)
-        ));
+    // ($lexer:ident, $msg:literal, $($args:expr),*) => {{
+    //     eprintln!("Error! {}", format!(
+    //         "line {}, column {}:\n{}",
+    //         $lexer.line, $lexer.col, format!($msg, $($args),*)
+    //     ));
 
-        std::process::exit(1);
-    }};
+    //     std::process::exit(1);
+    // }};
 }
 
 pub fn collect_cli_args() -> Vec<String> {

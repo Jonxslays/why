@@ -3,17 +3,15 @@ pub enum TokenType {
     Eof,
     Ident,
     Str,
-    Int,
-    Uint,
-    Float,
-    Ufloat,
     Eq,
-    Lparen,
-    Rpaen,
+    LParen,
+    RParen,
     Hash,
     Dollar,
     Colon,
     Comma,
+    Slash,
+    Backslash,
     Semi,
     At,
     SmallRArrow,
@@ -38,18 +36,50 @@ pub enum TokenType {
 #[derive(Clone, Debug)]
 pub struct Token {
     pub typ: TokenType,
-    pub value: Option<String>,
+    pub value: String,
+    pub line: usize,
+    pub col: usize,
     pub addtl: Option<Vec<String>>,
 }
 
 impl Token {
     pub fn new(typ: TokenType) -> Self {
-        Self { typ, value: None, addtl: None }
+        Self {
+            typ,
+            value: "".to_string(),
+            addtl: None,
+            line: 0,
+            col: 0,
+        }
+    }
+
+    pub fn at(typ: TokenType, line: usize, col: usize) -> Self {
+        Self {
+            typ,
+            value: "".to_string(),
+            addtl: None,
+            line,
+            col,
+        }
     }
 
     pub fn with_value(typ: TokenType, value: String) -> Self {
-        let me = Self { typ, value: Some(value), addtl: None };
-        println!("Me: {:?}", me);
-        me
+        Self {
+            typ,
+            value,
+            addtl: None,
+            line: 0,
+            col: 0,
+        }
+    }
+
+    pub fn with_value_at(typ: TokenType, value: String, line: usize, col: usize) -> Self {
+        Self {
+            typ,
+            value,
+            addtl: None,
+            line,
+            col,
+        }
     }
 }
