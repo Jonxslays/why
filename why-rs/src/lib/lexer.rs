@@ -52,11 +52,11 @@ impl Lexer {
     }
 
     fn parse_eq(idx: &mut usize, tokens: &mut Vec<Token>, token: Token) {
-        match token.typ {
-            TokenType::Eq => Lexer::advance_with(idx, tokens, token, 1),
-            TokenType::EqEq | TokenType::LargeRArrow => Lexer::advance_with(idx, tokens, token, 2),
-            _ => super::exc!("Unknown token after '{}'", token.value),
+        if let TokenType::Eq = token.typ {
+            return Lexer::advance_with(idx, tokens, token, 1);
         }
+
+        Lexer::advance_with(idx, tokens, token, 2);
     }
 
     fn advance(idx: &mut usize, i: usize) {
@@ -86,10 +86,8 @@ impl Lexer {
                     let token = self.lex_eq();
                     Lexer::parse_eq(&mut self.idx, &mut self.tokens, token);
                 }
-                _ => (),
+                _ => Lexer::advance(&mut self.idx, 1),
             }
-
-            Lexer::advance(&mut self.idx, 1);
         }
 
         self.tokens.push(Token::new(TokenType::Eof));
