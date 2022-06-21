@@ -1,4 +1,5 @@
-use super::Token;
+// use super::Token;
+use super::WhyExc;
 // use super::TokenType;
 
 #[derive(Clone, Debug)]
@@ -6,8 +7,7 @@ pub struct Lexer {
     pub src: String,
     pub col: usize,
     pub line: usize,
-    pub error: Option<String>,
-    pub tokens: Vec<Token>,
+    pub errors: Vec<WhyExc>,
 }
 
 impl Lexer {
@@ -16,13 +16,14 @@ impl Lexer {
             src,
             col: 1,
             line: 1,
-            error: None,
-            tokens: vec![],
+            errors: vec![],
         }
     }
 
     pub fn lex(&mut self) {
-
+        self.line = 69;
+        self.col = 420;
+        super::exc!(self, "uwu");
     }
 
     pub fn peek(&self, offset: isize) -> char {
