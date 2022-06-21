@@ -2,7 +2,6 @@
 pub enum TokenType {
     Eof,
     Ident,
-    Str,
     Eq,
     LParen,
     RParen,
@@ -10,6 +9,7 @@ pub enum TokenType {
     Dollar,
     Colon,
     Comma,
+    Dot,
     Slash,
     Backslash,
     Semi,
@@ -22,7 +22,6 @@ pub enum TokenType {
     Gte,
     Ne,
     EqEq,
-    Keyword,
     LBrace,
     RBrace,
     Exclamation,
@@ -34,12 +33,27 @@ pub enum TokenType {
 }
 
 #[derive(Clone, Debug)]
+pub struct Loc {
+    pub line: usize,
+    pub col: usize,
+}
+
+#[derive(Clone, Debug)]
 pub struct Token {
     pub typ: TokenType,
     pub value: String,
-    pub line: usize,
-    pub col: usize,
+    pub loc: Loc,
     pub addtl: Option<Vec<String>>,
+}
+
+impl Loc {
+    pub fn new() -> Self {
+        Self { line: 1, col: 1 }
+    }
+
+    pub fn at(line: usize, col: usize) -> Self {
+        Self { line, col }
+    }
 }
 
 impl Token {
@@ -48,8 +62,7 @@ impl Token {
             typ,
             value: "".to_string(),
             addtl: None,
-            line: 0,
-            col: 0,
+            loc: Loc::new(),
         }
     }
 
@@ -58,8 +71,7 @@ impl Token {
             typ,
             value: "".to_string(),
             addtl: None,
-            line,
-            col,
+            loc: Loc::at(line, col),
         }
     }
 
@@ -68,8 +80,7 @@ impl Token {
             typ,
             value,
             addtl: None,
-            line: 0,
-            col: 0,
+            loc: Loc::new(),
         }
     }
 
@@ -78,8 +89,7 @@ impl Token {
             typ,
             value,
             addtl: None,
-            line,
-            col,
+            loc: Loc::at(line, col),
         }
     }
 }
