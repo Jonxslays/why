@@ -14,12 +14,9 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(src: String) -> Self {
         let src: Vec<char> = src.chars().collect();
-        let c = src
-            .first()
-            .unwrap_or_else(|| {
-                super::exc!("No text in the file!!!");
-            })
-            .clone();
+        let c = *src.first().unwrap_or_else(|| {
+            super::exc!("No text in the file!!!");
+        });
 
         Self {
             c,
@@ -31,7 +28,7 @@ impl Lexer {
     }
 
     fn expect(&self, typ: TokenType, c: char) -> Option<Token> {
-        if self.peek(1).unwrap_or(char::default()) == c {
+        if self.peek(1).unwrap_or_default() == c {
             Some(Token::new(typ))
         } else {
             None
@@ -46,8 +43,7 @@ impl Lexer {
             token.value = "==".to_string();
             token
         } else {
-            let token = Token::with_value(TokenType::Eq, "=".to_string());
-            token
+            Token::with_value(TokenType::Eq, "=".to_string())
         }
     }
 
@@ -69,7 +65,7 @@ impl Lexer {
     }
 
     fn protect_index_error(&self) -> bool {
-        !(self.idx >= self.src.len())
+        self.idx < self.src.len()
     }
 
     pub fn lex(&mut self) -> Vec<Token> {
