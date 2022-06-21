@@ -77,3 +77,7 @@ pub fn read_source_file(filename: &String) -> String {
         exc!("Failed to read file: {}", filename);
     }
 }
+
+pub fn is_newline(c: char) -> bool {
+    c == '\n' || c == '\r'
+}
