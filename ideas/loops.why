@@ -1,39 +1,36 @@
-#list: array@int = [1, 2, 3, 4, 5, 6, 7];
-#dict: mapping@int->int = &{ 1->2, 3->4 };
+array@int my_list = [1, 2, 3, 4, 5, 6, 7];
+mapping@int->int my_dict = &{ 1->2, 3->4 };
 
 // Iterate each item in the list
 // equivalent to for each loops
-list@->item {
-    %print(item); // % is a qualifier for the stdlib (not required)
+my_list@->item {
+    // % is a qualifier for the stdlib (not required)
+    // but it can allow you to shadow builtins
+    %print(item);
 }
-
 // Iterate from 1 to 20 exclusive
 1->20@->number {
-    %print(number);
+    print(number);
 }
-
 // Iterate from 1 to 20 inclusive
 1=>20@->number {
-    %print(number);
+    print(number);
 }
-
 // Iterate the mapping keys and access each element
-dict@->key {
-    %print(dict@key);
+my_dict@->key {
+    print(dict@key);
     // or
-    %print(dict[key]);
+    print(dict[key]);
     // or
-    %print(dict.get(key))
+    print(dict.get(key))
     // Keep in mind this last one can return NULL
 }
-
 // Iterate the mapping keys and values simultaneously
-dict@=>(key, value) {
+my_dict@=>(key, value) {
     print(key);
     print(value);
 }
-
-#number: int = 0;
+int number = 0;
 // A while true loop
 @->true! {
     (number > 100)? {

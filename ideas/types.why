@@ -7,25 +7,25 @@
 */
 
 // Integer
-#w: int = -69;
+w: int = -69;
 
 // Unsigned integer
-#x: uint = 420;
+x: uint = 420;
 
 // Floating point
-#y: float = -3.50;
+y: float = -3.50;
 
 // Unsigned floating point
-#z: ufloat = 3.50;
+z: ufloat = 3.50;
 
 // String
-#a: string = "123";
+string a= "123";
 
 // A boolean
-#t: bool = true;
+array@bool t = true;
 
 // A null value, the type of which is void
-#nothing: void = NULL;
+nothing: void = NULL;
 
 /*
 // ********************************
@@ -57,9 +57,9 @@ bool t = true;
 void nothing = NULL;
 
 // Deleting a variable (or function or class) from memory
-a@->!;
-nothing@->!;
-z@->!;
+delete a;
+delete nothing;
+delete z;
 
 /*
 // ********************************
@@ -70,10 +70,10 @@ z@->!;
 */
 
 // A constant value
-#!my_constant: int! = 69420;
+const int my_constant = 69420;
 
 // A constant array or strings, the array can never be mutated
-#!my_constant_array: array@string! = ["this", "cant", "be", "changed"];
+array@string my_constant_array = ["this", "cant", "be", "changed"];
 
 /*
 // ********************************
@@ -84,7 +84,7 @@ z@->!;
 */
 
 // An Array of strings and integers
-#list: array@string|int = [1, "two", 3];
+array@string|int my_array = [1, "two", 3];
 
 // Access the first element of the array
 #element_one: int = list[0];
@@ -103,19 +103,24 @@ z@->!;
 // ********************************
 */
 
+mapping@string->int my_map = &{
+    "Goodbye": 4567,
+    "World": -0,
+};
+
 // A mapping of string keys to integer values
 // semicolon can not be left off in an assignment
-#my_map: mapping@string->int = &{
+mapping@string->int my_map = &{
     "Hello"->1234,
     "world"->69420,
 };
 
 // Access an element of the mapping
-#element1: int = my_map["Hello"];
+int element1 = my_map["Hello"];
 // or
-#element1_: int = my_map@"hello";
+int element1_ = my_map@"hello";
 // Access with the get method, and return a default of 0 if not found
-#element2: int = my_map.get("world", 0);
+int element2 = my_map.get("world", 0);
 
 /*
 // ********************************
@@ -128,12 +133,12 @@ z@->!;
 // Accepts an int, a string, and a list of strings, returns a string
 // Prefix values with `_` if you don't plan to use it
 // @ returns a value
-$main(num1: int, name: string, _values: array@string) @string {
+$main(int num1, string name, array@string _values) @string {
     @"Hello {name}, the number was {num1}";
 }
 
 // Accepts a mapping of string to int and returns the same
-$func1(data: mapping@string->int) @mapping@string->int {
+$func1(mapping@string->int data) @mapping@string->int {
     @data;
 }
 
@@ -143,8 +148,8 @@ $no_args() @int {
 }
 
 // Accepts an optional name
-$hello(name: string?) @void {
-    name? -> {
+$hello(name: string??) @void {
+    name?? {
         print("Hello, {name}!");
     } !-> {
         print("Hello, there!");
@@ -153,14 +158,15 @@ $hello(name: string?) @void {
 
 // Function that accepts another function as a param
 // and returns its value
-$accepts_func_with_no_args(f: $()@int) @int {
+$accepts_func_with_no_args($@int f) @int {
     @f();
 }
 
-// Another example of the above
-$accepts_func_with_one_arg(f: $(mapping@string->int))
-@mapping@string->int {
-    #my_map = &{
+
+// Accepts a function which accepts a mapping of string->int
+// Calls the function and returns void
+$accepts_func_with_one_arg($(mapping@string->int)@void f) @void {
+    my_map = &{
         "hello": "world",
         "goodbye": "world",
     };
@@ -169,7 +175,7 @@ $accepts_func_with_one_arg(f: $(mapping@string->int))
 }
 
 // Anonymous functions as a variable
-#anonymous_func: $@int = $()@int {
+$@int anonymous_func = ${
     @69420;
 }
 
@@ -211,20 +217,20 @@ print("woo");
 
 // Creating an instance of SomeClass, note the type hint can be left
 // off but is included to be explicit
-#object: &SomeClass = &SomeClass();
+SomeClass object = SomeClass();
 
 // A class animal with one property, an unsigned int age
 &Animal {
-    #age: uint;
+    uint age;
 }
 
 // A class Person that inherits from Animal
 // It has a first, middle and last name
 // Notice the private and protected properties
-&Person is &Animal {
-    #first_name: string;
-    #middle_name: private string = "Unknown";
-    #last_name: protected string;
+&Person is Animal {
+    string first_name;
+    private string middle_name = "Unknown";
+    protected string last_name;
 
     // An instance method
     // Returns nothing but prints the full name
@@ -245,21 +251,21 @@ print("woo");
     }
 }
 
-#jonx = &Person(
-    #age = 23;
-    #first_name = "Jon";
-    #last_name = "xslays";
+Person jonx = Person(
+    age = 23;
+    first_name = "Jon";
+    last_name = "xslays";
 )
 
 jonx.print_name();
 
 // Note that static methods must use the `:` to be accessed
-%print(jonx:return_420());
+print(jonx:return_420());
 // Also valid
-%print(&Person:return_420());
+print(Person:return_420());
 
-%print(jonx.age);
-%print(jonx.first_name);
+print(jonx.age);
+print(jonx.first_name);
 
-%print(jonx.last_name); // Errors (protected)
-%print(jonx.middle_name); // Errors (private)
+print(jonx.last_name); // Errors (protected)
+print(jonx.middle_name); // Errors (private)

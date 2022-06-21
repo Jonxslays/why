@@ -1,4 +1,4 @@
-#one = /* multi line comment */ 1;
+int one = /* multi line comment */ 1;
 // This is a comment
 #two = 2;
 

@@ -48,6 +48,8 @@ impl Token {
     }
 
     pub fn with_value(typ: TokenType, value: String) -> Self {
-        Self { typ, value: Some(value), addtl: None }
+        let me = Self { typ, value: Some(value), addtl: None };
+        println!("Me: {:?}", me);
+        me
     }
 }
