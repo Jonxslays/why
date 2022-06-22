@@ -6,10 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-path = "why-rs/src/lib/lib.rs"
+path = "why-rs/lib/lib.rs"
 
 [[bin]]
 name = "why"
-path = "why-rs/src/main.rs"
+path = "why-rs/main.rs"
 
 [dependencies]
