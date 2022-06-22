@@ -1,9 +1,0 @@
-#one = /* multi line comment */ 1 ;
-// This is a comment
-#two = 2 ;
-
-/*
- * Actual multiline comment
- */
-
-#three = 3 ;

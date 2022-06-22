@@ -1,6 +1,7 @@
 mod errors;
 mod lexer;
 mod token;
+pub mod macros;
 pub mod utils;
 
 pub use errors::WhyExc;
