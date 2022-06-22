@@ -4,6 +4,7 @@ use super::Token;
 use super::TokenType;
 use super::WhyExc;
 
+/// A lexer, for generating tokens from text.
 #[derive(Clone, Debug)]
 pub struct Lexer {
     pub src: Vec<char>,
@@ -16,6 +17,7 @@ pub struct Lexer {
 }
 
 impl Lexer {
+    /// Creates a new lexer to be used on a given string.
     pub fn new(src: String) -> Self {
         let src: Vec<char> = src.chars().collect();
         let src_len = src.len();
@@ -35,10 +37,14 @@ impl Lexer {
         }
     }
 
-    pub fn can_advance(&self) -> bool {
+    /// True, if there is more src file to read.
+    fn can_advance(&self) -> bool {
         self.idx < self.src.len() - 1
     }
 
+    /// Expects a given char to come next.
+    /// If it does, return a new token of type `typ`.
+    /// If it does not, return None
     fn expect(&self, typ: TokenType, c: char) -> Option<Token> {
         if self.peek(1).unwrap_or_default() == c {
             Some(Token::new(typ))
@@ -47,10 +53,10 @@ impl Lexer {
         }
     }
 
-    /// Moves to the next character for further lexing
+    /// Moves to the next character for further lexing.
     fn next(lexer: &mut Lexer) {
         if lexer.can_advance() {
-            if ['\n', '\r'].contains(&lexer.c) {
+            if utils::is_newline(lexer.c) {
                 // If its a newline, reset the column and add a line
                 lexer.line += 1;
                 lexer.col = 1;
@@ -66,13 +72,13 @@ impl Lexer {
         }
     }
 
-    // Moves to the next character, and also pushes a token
+    /// Moves to the next character, and also pushes a token.
     fn next_with(lexer: &mut Lexer, token: Token) {
         Lexer::next(lexer);
         lexer.tokens.push(token);
     }
 
-    /// Peeks at some other character nearby
+    /// Peeks at some other character nearby.
     fn peek(&self, offset: isize) -> Option<char> {
         if !self.can_advance() {
             return None;
@@ -100,7 +106,8 @@ impl Lexer {
         }
     }
 
-    // Pushes an equals token onto the token stack
+    /// Pushes an Eq, EqEq, or LargeRArrow token onto the token stack,
+    /// and advances.
     fn lex_eq(lexer: &mut Lexer) {
         let token = lexer.get_eq_token();
 
@@ -113,23 +120,36 @@ impl Lexer {
         }
     }
 
+    /// Returns true if the current and next char are `*/`.
+    fn end_multiline_comment(lexer: &Lexer) -> bool {
+        {
+            lexer.c == '*' &&
+            lexer.peek(1).unwrap_or_default() == '/'
+        }
+    }
+
+    /// Advances the current index/char until its no longer a comment.
     fn skip_comment(lexer: &mut Lexer, multiline: bool) {
-        if !multiline && lexer.peek(1).unwrap_or_default() != '*' {
-            // The put a / with no * after it (bad lol)
-            super::exc!("Invalid token: '{}'", lexer.c);
+        if multiline {
+            // This could be a while... :)
+            while lexer.can_advance() {
+                if Lexer::end_multiline_comment(lexer) {
+                    return;
+                }
+
+                Lexer::next(lexer);
+            }
+        }
+
+        let next = lexer.peek(1).unwrap_or_default();
+        if !['/', '*'].contains(&next) {
+            super::exc!("Invalid character after a '/': '{}'", next);
         }
 
         while lexer.can_advance() {
             Lexer::next(lexer);
 
-            if multiline && lexer.c == '*' {
-                // We might be closing the multiline comment
-                if lexer.peek(1).unwrap_or_default() == '/' {
-                    // It is closed
-                    Lexer::next(lexer);
-                    break;
-                }
-            } else if lexer.c == '*' {
+            if lexer.c == '*' {
                 // We are starting a multi line comment, recurse
                 return Lexer::skip_comment(lexer, true);
             } else if !multiline && lexer.c == '/' {
@@ -143,10 +163,11 @@ impl Lexer {
         }
     }
 
+    /// Generate an Ident token, push to the stack, and advance.
     fn lex_ident(lexer: &mut Lexer) {
         let mut name = String::new();
 
-        while lexer.peek(1).unwrap_or_default().is_ascii_alphanumeric() {
+        while lexer.c.is_alphanumeric() {
             // Keep going til its some other type of character like space or semi
             name.push(lexer.c);
             Lexer::next(lexer);
@@ -157,20 +178,48 @@ impl Lexer {
         lexer.tokens.push(token);
     }
 
+    /// Generate a Semi token, push to the stack, and advance.
     fn lex_semi(lexer: &mut Lexer) {
-        Lexer::next_with(
-            lexer,
-            Token::with_value_at(TokenType::Semi, ";".to_string(), lexer.line, lexer.col),
-        );
+        lexer.tokens.push(
+            Token::with_value_at(TokenType::Semi, ";".to_string(), lexer.line, lexer.col)
+        )
     }
 
+    /// Generate a Sot token, push to the stack, and advance.
     fn lex_dot(lexer: &mut Lexer) {
-        Lexer::next_with(
-            lexer,
+        lexer.tokens.push(
             Token::with_value_at(TokenType::Dot, ".".to_string(), lexer.line, lexer.col),
         );
     }
 
+    /// Generate an At token, push to the stack, and advance.
+    fn lex_at(lexer: &mut Lexer) {
+        lexer.tokens.push(
+            Token::with_value_at(TokenType::At, "@".to_string(), lexer.line, lexer.col),
+        );
+    }
+
+    fn lex_and(lexer: &mut Lexer) {
+        lexer.tokens.push(
+            Token::with_value_at(TokenType::And, "&".to_string(), lexer.line, lexer.col),
+        );
+    }
+
+    fn lex_dollar(lexer: &mut Lexer) {
+        lexer.tokens.push(
+            Token::with_value_at(TokenType::Dollar, "$".to_string(), lexer.line, lexer.col),
+        );
+    }
+
+    fn lex_exclamation(lexer: &mut Lexer) {
+        lexer.tokens.push(
+            Token::with_value_at(TokenType::Exclamation, "!".to_string(), lexer.line, lexer.col),
+        );
+    }
+
+    /// Lexes the text attached to this lexer. Returns a vector of the lexed tokens.
+    ///
+    /// The same tokens are also available at `lexer.tokens`.
     pub fn lex(&mut self) -> Vec<Token> {
         let _in_string = false;
 
@@ -178,15 +227,19 @@ impl Lexer {
             println!("Index: {}, Char: {:?}", self.idx, self.c);
 
             match self.c {
-                '=' => Lexer::lex_eq(self),
-                '/' => Lexer::skip_comment(self, false),
                 ' ' | '\n' | '\r' => (),
-                '&' | '$' => Lexer::next(self),
+                '=' => Lexer::lex_eq(self),
+                '&' => Lexer::lex_and(self),
                 ';' => Lexer::lex_semi(self),
                 '.' => Lexer::lex_dot(self),
+                '@' => Lexer::lex_at(self),
+                '$' => Lexer::lex_dollar(self),
+                '!' => Lexer::lex_exclamation(self),
+                '/' => Lexer::skip_comment(self, false),
                 _ => {
-                    if self.c.is_ascii_alphanumeric() {
+                    if self.c.is_alphanumeric() {
                         Lexer::lex_ident(self);
+                        continue;
                     }
                 }
             }

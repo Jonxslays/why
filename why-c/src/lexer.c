@@ -44,11 +44,6 @@ void lexer_skip_comment(Lexer *lexer, short int *multiline) {
             lexer_next(lexer);
             lexer_next(lexer);
             *multiline = 0;
-        } else if (next == '\0') {
-            // We started a comment and never closed it
-            fprintf(stderr, "Error: Multiline comment was never closed\n");
-            free(lexer);
-            exit(1);
         } else {
             // There was * but no / afterwards
             lexer_next(lexer);

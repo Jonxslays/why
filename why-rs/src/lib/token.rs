@@ -14,6 +14,7 @@ pub enum TokenType {
     Backslash,
     Semi,
     At,
+    And,
     SmallRArrow,
     LargeRArrow,
     Lt,
