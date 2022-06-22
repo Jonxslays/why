@@ -1,8 +1,6 @@
 use std::env;
 use std::fs;
 
-pub type WhyRes = Result<(), WhyExc>;
-
 /// Obtains the CLI args passed to the programs execution.
 ///
 /// # Returns

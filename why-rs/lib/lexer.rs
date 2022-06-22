@@ -5,13 +5,18 @@ use super::WhyExc;
 /// A lexer, for generating tokens from text.
 #[derive(Clone, Debug)]
 pub struct Lexer {
+    /// The source code to be lexed.
     pub src: Vec<char>,
+    /// The current index being lexed.
     pub idx: usize,
+    /// The current line being lexed.
     pub line: usize,
+    /// The current column being lexed.
     pub col: usize,
+    /// The current character being lexed.
     pub c: char,
+    /// The tokens that have already been lexed.
     pub tokens: Vec<Token>,
-    pub errors: Vec<WhyExc>,
 }
 
 impl Lexer {
@@ -36,7 +41,6 @@ impl Lexer {
                 col: 1,
                 // Arbitrarily guessing a token will happen every 6 chars
                 tokens: Vec::with_capacity(src_len / 6 + 1),
-                errors: vec![],
             })
         } else {
             super::exc!("There was no text in the file.")
@@ -68,8 +72,8 @@ impl Lexer {
 
         if lexer.can_advance() {
             // The index always increases
-            lexer.idx += 1;
             // Get the next character
+            lexer.idx += 1;
             lexer.c = lexer.src[lexer.idx];
         }
     }
@@ -77,7 +81,7 @@ impl Lexer {
     /// Peeks at some other character nearby.
     #[must_use]
     pub fn peek(&self, offset: isize) -> Option<char> {
-        if !self.can_advance() {
+        if !self.can_advance() || offset.abs() as usize >= self.src.len() {
             return None;
         }
 
@@ -143,7 +147,7 @@ impl Lexer {
         Ok(())
     }
 
-    // Determines which token this is, if the char was an equals
+    /// Determines which token this is, if the char was an equals/
     #[must_use]
     pub fn get_eq_token(&self) -> Token {
         match self.peek(1).unwrap_or_default() {
@@ -153,8 +157,8 @@ impl Lexer {
         }
     }
 
-    /// Pushes an `Eq`, `EqEq`, or `LargeRArrow` token onto the token stack,
-    /// and advances.
+    /// Pushes an `Eq`, `EqEq`, or `LargeRArrow` token onto the token
+    /// stack, and advances.
     pub fn lex_eq(lexer: &mut Lexer) {
         let token = lexer.get_eq_token();
         lexer.tokens.push(token.clone());
@@ -165,6 +169,7 @@ impl Lexer {
         }
     }
 
+    /// Determines which token this is, if the char was a minus.
     #[must_use]
     pub fn get_minus_token(&self) -> Token {
         match self.peek(1).unwrap_or_default() {
@@ -175,6 +180,8 @@ impl Lexer {
         }
     }
 
+    /// Pushes a `Minus`, `MinusMinus`, `MinusEq`, or `SmallRArrow`
+    /// token onto the token stack, and advances.
     pub fn lex_minus(lexer: &mut Lexer) {
         let token = lexer.get_minus_token();
         lexer.tokens.push(token.clone());
@@ -185,6 +192,7 @@ impl Lexer {
         }
     }
 
+    /// Determines which token this is, if the char was a plus.
     #[must_use]
     pub fn get_plus_token(&self) -> Token {
         match self.peek(1).unwrap_or_default() {
@@ -194,6 +202,8 @@ impl Lexer {
         }
     }
 
+    /// Pushes a `Plus`, `PlusPlus`, or `PlusEq` token onto the token
+    /// stack, and advances.
     pub fn lex_plus(lexer: &mut Lexer) {
         let token = lexer.get_plus_token();
         lexer.tokens.push(token.clone());
@@ -204,6 +214,7 @@ impl Lexer {
         }
     }
 
+    /// Determines which token this is, if the char was a star.
     #[must_use]
     pub fn get_star_token(&self) -> Token {
         match self.peek(1).unwrap_or_default() {
@@ -213,6 +224,8 @@ impl Lexer {
         }
     }
 
+    /// Pushes a `Star`, `StarStar`, or `StarEq` token onto the token
+    /// stack, and advances.
     pub fn lex_star(lexer: &mut Lexer) {
         let token = lexer.get_star_token();
         lexer.tokens.push(token.clone());
@@ -286,15 +299,17 @@ impl Lexer {
         super::make_token_mut!(TokenType::Semi, ";", lexer);
     }
 
-    /// Generate a Sot token, push to the stack, and advance.
+    /// Generate a `Dot` token, push to the stack, and advance.
     pub fn lex_dot(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::Dot, ".", lexer);
     }
 
+    /// Generate a `Comma` token, push to the stack, and advance.
     pub fn lex_comma(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::Comma, ",", lexer);
     }
 
+    /// Generate a `Colon` token, push to the stack, and advance.
     pub fn lex_colon(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::Colon, ":", lexer);
     }
@@ -304,22 +319,27 @@ impl Lexer {
         super::make_token_mut!(TokenType::At, "@", lexer);
     }
 
+    /// Generate an `And` token, push to the stack, and advance.
     pub fn lex_and(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::And, "&", lexer);
     }
 
+    /// Generate an `Dollar` token, push to the stack, and advance.
     pub fn lex_dollar(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::Dollar, "$", lexer);
     }
 
+    /// Generate an `Exclamation` token, push to the stack, and advance.
     pub fn lex_exclamation(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::Exclamation, "!", lexer);
     }
 
+    /// Generate an `Caret` token, push to the stack, and advance.
     pub fn lex_caret(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::Caret, "^", lexer);
     }
 
+    /// Generate an `QuestionMark` token, push to the stack, and advance.
     pub fn lex_question_mark(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::QuestionMark, "?", lexer);
     }

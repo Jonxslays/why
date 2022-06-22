@@ -1,9 +1,9 @@
-#[allow(dead_code)]
+#[allow(dead_code)] // TODO: Add more tests from this code here.
 const SOURCE: &'static str = {
     r#"
 
-// Iterate each item in the list
-// equivalent to for each loops
+    // Iterate each item in the list
+    // equivalent to for each loops
 my_list@->item {
     // % is a qualifier for the stdlib (not required)
     // but it can allow you to shadow builtins
@@ -44,7 +44,7 @@ int number = 0;
 };
 
 #[cfg(test)]
-mod test_vars {
+mod test_lexer {
     // use crate::SOURCE;
     use why_rs::Lexer;
     use why_rs::Loc;
@@ -53,8 +53,96 @@ mod test_vars {
     use why_rs::WhyExc;
 
     #[test]
+    fn test_new() -> Result<(), WhyExc> {
+        let src = "Rewrite it in rust.";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(lexer.c, 'R');
+        assert_eq!(lexer.idx, 0);
+        assert_eq!(lexer.line, 1);
+        assert_eq!(lexer.col, 1);
+        assert_eq!(lexer.src.len(), src.len());
+        assert_eq!(lexer.src.iter().collect::<String>(), src.to_string());
+        assert!(lexer.tokens.is_empty());
+        println!("{}", lexer.tokens.capacity());
+        assert!(lexer.tokens.capacity() == 4);
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_new_fails_with_no_src_content() {
+        let src = "";
+        let _ = Lexer::new(src).unwrap();
+    }
+
+    #[test]
+    fn test_can_advance() -> Result<(), WhyExc> {
+        let src = "hikari-py.dev - check it out!";
+        let mut lexer = Lexer::new(src)?;
+
+        assert!(lexer.can_advance());
+        lexer.idx += src.len() - 1;
+        assert!(!lexer.can_advance());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_is_newline() {
+        let newline = '\n';
+        let carriage = '\r';
+        let underscore = '_';
+
+        assert!(Lexer::is_newline(newline));
+        assert!(Lexer::is_newline(carriage));
+        assert!(!Lexer::is_newline(underscore));
+    }
+
+    #[test]
+    fn test_next() -> Result<(), WhyExc> {
+        let src = "123\n\r";
+        let mut lexer = Lexer::new(src)?;
+
+        Lexer::next(&mut lexer);
+        assert_eq!(lexer.line, 1);
+        assert_eq!(lexer.col, 2);
+        assert_eq!(lexer.idx, 1);
+
+        Lexer::next(&mut lexer);
+        assert_eq!(lexer.line, 1);
+        assert_eq!(lexer.col, 3);
+        assert_eq!(lexer.idx, 2);
+
+        Lexer::next(&mut lexer);
+        assert_eq!(lexer.line, 1);
+        assert_eq!(lexer.col, 4);
+        assert_eq!(lexer.idx, 3);
+
+        Lexer::next(&mut lexer);
+        assert_eq!(lexer.line, 2);
+        assert_eq!(lexer.col, 1);
+        assert_eq!(lexer.idx, 4);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_peek() -> Result<(), WhyExc> {
+        let src = "abc";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(lexer.peek(1).unwrap(), 'b');
+        assert_eq!(lexer.peek(2).unwrap(), 'c');
+        assert!(lexer.peek(3).is_none());
+
+        Ok(())
+    }
+
+    #[test]
     #[rustfmt::skip]
-    fn test_lexer_lexes_int_definition() -> Result<(), WhyExc> {
+    fn test_lexing_int_definition() -> Result<(), WhyExc> {
         let src = "int my_num = 69;";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -74,7 +162,7 @@ mod test_vars {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lexer_lexes_float_definition() -> Result<(), WhyExc> {
+    fn test_lexing_float_definition() -> Result<(), WhyExc> {
         let src = "float my_float = 69.420;";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -94,7 +182,7 @@ mod test_vars {
 
     #[test]
     #[should_panic]
-    fn test_lexer_fails_on_invalid_float_definition() {
+    fn test_lexing_fails_on_invalid_float_definition() {
         let src = "float my_float = 69.420.69;";
         let mut lexer = Lexer::new(src).unwrap();
         let _received_tokens = lexer.lex().unwrap();
@@ -102,7 +190,7 @@ mod test_vars {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lexer_lexes_array_definition() -> Result<(), WhyExc> {
+    fn test_lexing_array_definition() -> Result<(), WhyExc> {
         let src = "array@int my_list = [1, 2, 3, 4, 5, 6, 7];";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -138,7 +226,7 @@ mod test_vars {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lexer_lexes_mapping_definition() -> Result<(), WhyExc> {
+    fn test_lexing_mapping_definition() -> Result<(), WhyExc> {
         let src = "mapping@int->int my_dict = &{ 1->2, 3->4 };";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
