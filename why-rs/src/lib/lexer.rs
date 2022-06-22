@@ -1,5 +1,4 @@
 use super::utils;
-use super::Loc;
 use super::Token;
 use super::TokenType;
 use super::WhyExc;
@@ -42,17 +41,6 @@ impl Lexer {
         self.idx < self.src.len() - 1
     }
 
-    /// Expects a given char to come next.
-    /// If it does, return a new token of type `typ`.
-    /// If it does not, return None
-    fn expect(&self, typ: TokenType, c: char) -> Option<Token> {
-        if self.peek(1).unwrap_or_default() == c {
-            Some(Token::new(typ))
-        } else {
-            None
-        }
-    }
-
     /// Moves to the next character for further lexing.
     fn next(lexer: &mut Lexer) {
         if lexer.can_advance() {
@@ -72,12 +60,6 @@ impl Lexer {
         }
     }
 
-    /// Moves to the next character, and also pushes a token.
-    fn next_with(lexer: &mut Lexer, token: Token) {
-        Lexer::next(lexer);
-        lexer.tokens.push(token);
-    }
-
     /// Peeks at some other character nearby.
     fn peek(&self, offset: isize) -> Option<char> {
         if !self.can_advance() {
@@ -90,19 +72,10 @@ impl Lexer {
 
     // Determines which token this is, if the char was an equals
     fn get_eq_token(&self) -> Token {
-        if let Some(mut token) = self.expect(TokenType::LargeRArrow, '>') {
-            // This is a fat right arrow
-            token.value = "=>".to_string();
-            token.loc = Loc::at(self.line, self.col);
-            token
-        } else if let Some(mut token) = self.expect(TokenType::EqEq, '=') {
-            // This is a double equals
-            token.value = "==".to_string();
-            token.loc = Loc::at(self.line, self.col);
-            token
-        } else {
-            // Regular equals
-            Token::with_value_at(TokenType::Eq, "=".to_string(), self.line, self.col)
+        match self.peek(1).unwrap_or_default() {
+            '>' => super::make_token!(TokenType::LargeRArrow, "=>", self),
+            '=' => super::make_token!(TokenType::EqEq, "==", self),
+            _ => super::make_token!(TokenType::Eq, "=", self),
         }
     }
 
@@ -110,13 +83,14 @@ impl Lexer {
     /// and advances.
     fn lex_eq(lexer: &mut Lexer) {
         let token = lexer.get_eq_token();
+        lexer.tokens.push(token.clone());
 
         if let TokenType::Eq = token.typ {
-            Lexer::next_with(lexer, token);
+            Lexer::next(lexer);
         } else {
             // The other eq tokens take 2 chars
             Lexer::next(lexer);
-            Lexer::next_with(lexer, token);
+            Lexer::next(lexer);
         }
     }
 
@@ -143,7 +117,7 @@ impl Lexer {
 
         let next = lexer.peek(1).unwrap_or_default();
         if !['/', '*'].contains(&next) {
-            super::exc!("Invalid character after a '/': '{}'", next);
+            super::lex_exc!(lexer, "Invalid character after a '/': '{}'", next);
         }
 
         while lexer.can_advance() {
@@ -166,6 +140,7 @@ impl Lexer {
     /// Generate an Ident token, push to the stack, and advance.
     fn lex_ident(lexer: &mut Lexer) {
         let mut name = String::new();
+        let mut token = Token::at(TokenType::Ident, lexer.line, lexer.col);
 
         while lexer.c.is_alphanumeric() {
             // Keep going til its some other type of character like space or semi
@@ -173,48 +148,47 @@ impl Lexer {
             Lexer::next(lexer);
         }
 
-        let length = name.len();
-        let token = Token::with_value_at(TokenType::Ident, name, lexer.line, lexer.col - length);
+        token.value = name;
         lexer.tokens.push(token);
     }
 
     /// Generate a Semi token, push to the stack, and advance.
     fn lex_semi(lexer: &mut Lexer) {
-        lexer.tokens.push(
-            Token::with_value_at(TokenType::Semi, ";".to_string(), lexer.line, lexer.col)
-        )
+        super::make_token_mut!(TokenType::Semi, ";", lexer)
     }
 
     /// Generate a Sot token, push to the stack, and advance.
     fn lex_dot(lexer: &mut Lexer) {
-        lexer.tokens.push(
-            Token::with_value_at(TokenType::Dot, ".".to_string(), lexer.line, lexer.col),
-        );
+        super::make_token_mut!(TokenType::Dot, ".", lexer);
     }
 
     /// Generate an At token, push to the stack, and advance.
     fn lex_at(lexer: &mut Lexer) {
-        lexer.tokens.push(
-            Token::with_value_at(TokenType::At, "@".to_string(), lexer.line, lexer.col),
-        );
+        super::make_token_mut!(TokenType::At, "@", lexer);
     }
 
     fn lex_and(lexer: &mut Lexer) {
-        lexer.tokens.push(
-            Token::with_value_at(TokenType::And, "&".to_string(), lexer.line, lexer.col),
-        );
+        super::make_token_mut!(TokenType::And, "&", lexer);
     }
 
     fn lex_dollar(lexer: &mut Lexer) {
-        lexer.tokens.push(
-            Token::with_value_at(TokenType::Dollar, "$".to_string(), lexer.line, lexer.col),
-        );
+        super::make_token_mut!(TokenType::Dollar, "$", lexer);
     }
 
     fn lex_exclamation(lexer: &mut Lexer) {
-        lexer.tokens.push(
-            Token::with_value_at(TokenType::Exclamation, "!".to_string(), lexer.line, lexer.col),
-        );
+        super::make_token_mut!(TokenType::Exclamation, "!", lexer);
+    }
+
+    fn lex_enclosures(lexer: &mut Lexer) {
+        match lexer.c {
+            '(' => super::make_token_mut!(TokenType::LParen, "(", lexer),
+            ')' => super::make_token_mut!(TokenType::RParen, ")", lexer),
+            '[' => super::make_token_mut!(TokenType::LBracket, "[", lexer),
+            ']' => super::make_token_mut!(TokenType::RBracket, "]", lexer),
+            '{' => super::make_token_mut!(TokenType::LBrace, "{", lexer),
+            '}' => super::make_token_mut!(TokenType::RBrace, "}", lexer),
+            _ => super::lex_exc!(lexer, "Got unexpected enclosure: '{}'", lexer.c),
+        }
     }
 
     /// Lexes the text attached to this lexer. Returns a vector of the lexed tokens.
@@ -227,7 +201,6 @@ impl Lexer {
             println!("Index: {}, Char: {:?}", self.idx, self.c);
 
             match self.c {
-                ' ' | '\n' | '\r' => (),
                 '=' => Lexer::lex_eq(self),
                 '&' => Lexer::lex_and(self),
                 ';' => Lexer::lex_semi(self),
@@ -236,6 +209,8 @@ impl Lexer {
                 '$' => Lexer::lex_dollar(self),
                 '!' => Lexer::lex_exclamation(self),
                 '/' => Lexer::skip_comment(self, false),
+                '(' | ')' | '[' | ']' | '{' | '}' => Lexer::lex_enclosures(self),
+                ' ' | '\n' | '\r' => (),
                 _ => {
                     if self.c.is_alphanumeric() {
                         Lexer::lex_ident(self);
@@ -251,7 +226,7 @@ impl Lexer {
             Lexer::next(self);
         }
 
-        self.tokens.push(Token::at(TokenType::Eof, self.line, self.col));
+        super::make_token_mut!(TokenType::Eof, "", self);
         self.tokens.clone()
     }
 }
