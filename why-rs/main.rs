@@ -1,14 +1,17 @@
-use why_rs::utils;
+use why_rs::internal;
 use why_rs::Lexer;
+use why_rs::WhyExc;
 
-fn main() {
-    let args = utils::collect_cli_args();
-    let src = utils::read_source_file(&args[1]);
+fn main() -> Result<(), WhyExc> {
+    let args = internal::collect_cli_args()?;
+    let src = internal::read_source_file(&args[1])?;
 
-    let mut lexer = Lexer::new(src);
-    let tokens = lexer.lex();
+    let mut lexer = Lexer::new(&src)?;
+    let tokens = lexer.lex()?;
 
     for token in &tokens {
         println!("{:?}", token);
     }
+
+    Ok(())
 }

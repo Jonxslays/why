@@ -28,10 +28,12 @@ pub enum TokenType {
     And,
     SmallRArrow,
     LargeRArrow,
+    NumLiteral,
+    StrLiteral,
     Lt,
     Gt,
     Lte,
-    Gte, // TODO: Add support for +=, *=, ++, --, etc...
+    Gte,
     Ne,
     EqEq,
     LBrace,
@@ -59,16 +61,25 @@ pub struct Token {
 }
 
 impl Loc {
+    #[must_use]
     pub fn new() -> Self {
         Self { line: 1, col: 1 }
     }
 
+    #[must_use]
     pub fn at(line: usize, col: usize) -> Self {
         Self { line, col }
     }
 }
 
+impl Default for Loc {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Token {
+    #[must_use]
     pub fn new(typ: TokenType) -> Self {
         Self {
             typ,
@@ -78,6 +89,7 @@ impl Token {
         }
     }
 
+    #[must_use]
     pub fn at(typ: TokenType, line: usize, col: usize) -> Self {
         Self {
             typ,
@@ -87,6 +99,7 @@ impl Token {
         }
     }
 
+    #[must_use]
     pub fn with_value(typ: TokenType, value: String) -> Self {
         Self {
             typ,
@@ -96,6 +109,7 @@ impl Token {
         }
     }
 
+    #[must_use]
     pub fn with_value_at(typ: TokenType, value: String, line: usize, col: usize) -> Self {
         Self {
             typ,

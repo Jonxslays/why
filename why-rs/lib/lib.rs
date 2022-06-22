@@ -1,11 +1,10 @@
-mod errors;
+pub mod internal;
 mod lexer;
-mod token;
 pub mod macros;
-pub mod utils;
+mod tokens;
 
-pub use errors::WhyExc;
+pub use internal::WhyExc;
 pub use lexer::Lexer;
-pub use token::Loc;
-pub use token::Token;
-pub use token::TokenType;
+pub use tokens::Loc;
+pub use tokens::Token;
+pub use tokens::TokenType;
