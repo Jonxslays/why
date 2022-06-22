@@ -101,9 +101,372 @@ mod test_lexer {
     }
 
     #[test]
+    fn test_skip_whitespace() -> Result<(), WhyExc> {
+        let src = "a    b";
+        let mut lexer = Lexer::new(src)?;
+
+        Lexer::skip_whitespace(&mut lexer);
+        assert_eq!(lexer.line, 1);
+        assert_eq!(lexer.col, 6);
+        assert_eq!(lexer.idx, 5);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_skip_single_line_comment() -> Result<(), WhyExc> {
+        let src = "// This is a comment\nhello";
+        let mut lexer = Lexer::new(src)?;
+
+        Lexer::skip_comment(&mut lexer, false)?;
+        assert_eq!(lexer.line, 1);
+        assert_eq!(lexer.col, 21);
+        assert_eq!(lexer.idx, 20);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_skip_multiline_comment() -> Result<(), WhyExc> {
+        let src = "/* This is a comment\nhello */\nwoo";
+        let mut lexer = Lexer::new(src)?;
+
+        Lexer::skip_comment(&mut lexer, true)?;
+        assert_eq!(lexer.line, 2);
+        assert_eq!(lexer.col, 9);
+        assert_eq!(lexer.idx, 29);
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_invalid_comment() {
+        let src = "/ / why is there a space there weirdo?";
+        let mut lexer = Lexer::new(src).unwrap();
+
+        Lexer::skip_comment(&mut lexer, false).unwrap();
+    }
+
+    #[test]
+    fn test_end_multiline_comment() -> Result<(), WhyExc> {
+        let multiline_ending = "*/";
+        let not_multiline_ending = "*69420";
+        let ending_lexer = Lexer::new(multiline_ending)?;
+        let not_ending_lexer = Lexer::new(not_multiline_ending)?;
+
+        assert!(Lexer::end_multiline_comment(&ending_lexer));
+        assert!(!Lexer::end_multiline_comment(&not_ending_lexer));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_eq_token() -> Result<(), WhyExc> {
+        let src = "=";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_eq_token(),
+            Token { typ: TokenType::Eq, value: "=".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_eq_token_eq_eq() -> Result<(), WhyExc> {
+        let src = "==";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_eq_token(),
+            Token { typ: TokenType::EqEq, value: "==".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_eq_token_large_r_arrow() -> Result<(), WhyExc> {
+        let src = "=>";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_eq_token(),
+            Token { typ: TokenType::LargeRArrow, value: "=>".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lex_eq() -> Result<(), WhyExc> {
+        let src = "= :)";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_eq(&mut lexer);
+
+        assert_eq!(
+            lexer.tokens[0],
+            Token { typ: TokenType::Eq, value: "=".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lex_eq_other() -> Result<(), WhyExc> {
+        let src = "=> :)";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_eq(&mut lexer);
+
+        assert_eq!(
+            lexer.tokens[0],
+            Token { typ: TokenType::LargeRArrow, value: "=>".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_minus_token() -> Result<(), WhyExc> {
+        let src = "-";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_minus_token(),
+            Token { typ: TokenType::Minus, value: "-".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_minus_token_minus_minus() -> Result<(), WhyExc> {
+        let src = "--";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_minus_token(),
+            Token { typ: TokenType::MinusMinus, value: "--".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_minus_token_minus_eq() -> Result<(), WhyExc> {
+        let src = "-=";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_minus_token(),
+            Token { typ: TokenType::MinusEq, value: "-=".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_minus_token_small_r_arrow() -> Result<(), WhyExc> {
+        let src = "->";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_minus_token(),
+            Token { typ: TokenType::SmallRArrow, value: "->".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lex_minus() -> Result<(), WhyExc> {
+        let src = "- :)";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_minus(&mut lexer);
+
+        assert_eq!(
+            lexer.tokens[0],
+            Token { typ: TokenType::Minus, value: "-".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lex_minus_other() -> Result<(), WhyExc> {
+        let src = "-> :)";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_minus(&mut lexer);
+
+        assert_eq!(
+            lexer.tokens[0],
+            Token { typ: TokenType::SmallRArrow, value: "->".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_plus_token() -> Result<(), WhyExc> {
+        let src = "+";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_plus_token(),
+            Token { typ: TokenType::Plus, value: "+".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_plus_token_plus_plus() -> Result<(), WhyExc> {
+        let src = "++";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_plus_token(),
+            Token { typ: TokenType::PlusPlus, value: "++".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_plus_token_plus_eq() -> Result<(), WhyExc> {
+        let src = "+=";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_plus_token(),
+            Token { typ: TokenType::PlusEq, value: "+=".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lex_plus() -> Result<(), WhyExc> {
+        let src = "+ :)";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_plus(&mut lexer);
+
+        assert_eq!(
+            lexer.tokens[0],
+            Token { typ: TokenType::Plus, value: "+".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lex_plus_other() -> Result<(), WhyExc> {
+        let src = "++ :)";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_plus(&mut lexer);
+
+        assert_eq!(
+            lexer.tokens[0],
+            Token { typ: TokenType::PlusPlus, value: "++".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_star_token() -> Result<(), WhyExc> {
+        let src = "*";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_star_token(),
+            Token { typ: TokenType::Star, value: "*".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_star_token_star_star() -> Result<(), WhyExc> {
+        let src = "**";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_star_token(),
+            Token { typ: TokenType::StarStar, value: "**".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_star_token_star_eq() -> Result<(), WhyExc> {
+        let src = "*=";
+        let lexer = Lexer::new(src)?;
+
+        assert_eq!(
+            lexer.get_star_token(),
+            Token { typ: TokenType::StarEq, value: "*=".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lex_star() -> Result<(), WhyExc> {
+        let src = "* :)";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_star(&mut lexer);
+
+        assert_eq!(
+            lexer.tokens[0],
+            Token { typ: TokenType::Star, value: "*".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lex_star_other() -> Result<(), WhyExc> {
+        let src = "** :)";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_star(&mut lexer);
+
+        assert_eq!(
+            lexer.tokens[0],
+            Token { typ: TokenType::StarStar, value: "**".to_string(), loc: Loc::default(), addtl: None },
+        );
+
+        Ok(())
+    }
+
+    // #[test]
+    // #[rustfmt::skip]
+    // fn test_lex_ident() -> Result<(), WhyExc> {
+    //     let src = "hello world";
+    //     let mut lexer = Lexer::new(src)?;
+    //     let received_tokens = lexer.lex()?;
+
+    //     let expected_tokens = vec![
+    //         Token { typ: TokenType::Ident, value: "hello".to_string(), loc: Loc::default(), addtl: None },
+    //         Token { typ: TokenType::Ident, value: "world".to_string(), loc: Loc { line: 1, col: 7 }, addtl: None },
+    //         Token { typ: TokenType::Eof, value: "".to_string(), loc: Loc { line: 1, col: 13 }, addtl: None },
+    //     ];
+
+    //     assert_eq!(expected_tokens, received_tokens);
+    //     Ok(())
+    // }
+
+    #[test]
     fn test_next() -> Result<(), WhyExc> {
         let src = "123\n\r";
         let mut lexer = Lexer::new(src)?;
+
+        assert_eq!(lexer.line, 1);
+        assert_eq!(lexer.col, 1);
+        assert_eq!(lexer.idx, 0);
 
         Lexer::next(&mut lexer);
         assert_eq!(lexer.line, 1);

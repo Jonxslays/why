@@ -112,6 +112,8 @@ impl Lexer {
             // This could be a while... :)
             while lexer.can_advance() {
                 if Lexer::end_multiline_comment(lexer) {
+                    Lexer::next(lexer);
+                    Lexer::next(lexer);
                     return Ok(());
                 }
 
