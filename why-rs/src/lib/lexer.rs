@@ -43,16 +43,16 @@ impl Lexer {
 
     /// Moves to the next character for further lexing.
     fn next(lexer: &mut Lexer) {
-        if lexer.can_advance() {
-            if utils::is_newline(lexer.c) {
-                // If its a newline, reset the column and add a line
-                lexer.line += 1;
-                lexer.col = 1;
-            } else {
-                // Otherwise just increase the column
-                lexer.col += 1;
-            }
+        if utils::is_newline(lexer.c) {
+            // If its a newline, reset the column and add a line
+            lexer.line += 1;
+            lexer.col = 1;
+        } else {
+            // Otherwise just increase the column
+            lexer.col += 1;
+        }
 
+        if lexer.can_advance() {
             // The index always increases
             lexer.idx += 1;
             // Get the next character
@@ -85,12 +85,64 @@ impl Lexer {
         let token = lexer.get_eq_token();
         lexer.tokens.push(token.clone());
 
-        if let TokenType::Eq = token.typ {
-            Lexer::next(lexer);
-        } else {
-            // The other eq tokens take 2 chars
-            Lexer::next(lexer);
-            Lexer::next(lexer);
+        match token.typ {
+            TokenType::Minus => (),
+            _ => Lexer::next(lexer),
+        }
+    }
+
+    fn get_minus_token(&self) -> Token {
+        match self.peek(1).unwrap_or_default() {
+            '-' => super::make_token!(TokenType::MinusMinus, "--", self),
+            '=' => super::make_token!(TokenType::MinusEq, "-=", self),
+            '>' => super::make_token!(TokenType::SmallRArrow, "-=", self),
+            _ => super::make_token!(TokenType::Minus, "-", self),
+        }
+    }
+
+    fn lex_minus(lexer: &mut Lexer) {
+        let token = lexer.get_minus_token();
+        lexer.tokens.push(token.clone());
+
+        match token.typ {
+            TokenType::Minus => (),
+            _ => Lexer::next(lexer),
+        }
+    }
+
+    fn get_plus_token(&self) -> Token {
+        match self.peek(1).unwrap_or_default() {
+            '+' => super::make_token!(TokenType::PlusPlus, "++", self),
+            '=' => super::make_token!(TokenType::PlusEq, "+=", self),
+            _ => super::make_token!(TokenType::Plus, "+", self),
+        }
+    }
+
+    fn lex_plus(lexer: &mut Lexer) {
+        let token = lexer.get_plus_token();
+        lexer.tokens.push(token.clone());
+
+        match token.typ {
+            TokenType::Plus => (),
+            _ => Lexer::next(lexer),
+        }
+    }
+
+    fn get_star_token(&self) -> Token {
+        match self.peek(1).unwrap_or_default() {
+            '*' => super::make_token!(TokenType::StarStar, "**", self),
+            '=' => super::make_token!(TokenType::StarEq, "*=", self),
+            _ => super::make_token!(TokenType::Star, "*", self),
+        }
+    }
+
+    fn lex_star(lexer: &mut Lexer) {
+        let token = lexer.get_star_token();
+        lexer.tokens.push(token.clone());
+
+        match token.typ {
+            TokenType::Star => (),
+            _ => Lexer::next(lexer),
         }
     }
 
@@ -116,14 +168,17 @@ impl Lexer {
         }
 
         let next = lexer.peek(1).unwrap_or_default();
-        if !['/', '*'].contains(&next) {
+        if !['/', '*', '='].contains(&next) {
             super::lex_exc!(lexer, "Invalid character after a '/': '{}'", next);
         }
 
         while lexer.can_advance() {
             Lexer::next(lexer);
 
-            if lexer.c == '*' {
+            if lexer.c == '=' {
+                // This is a /= not a comment
+                return super::make_token_mut!(TokenType::SlashEq, "/=", lexer);
+            } else if lexer.c == '*' {
                 // We are starting a multi line comment, recurse
                 return Lexer::skip_comment(lexer, true);
             } else if !multiline && lexer.c == '/' {
@@ -142,7 +197,7 @@ impl Lexer {
         let mut name = String::new();
         let mut token = Token::at(TokenType::Ident, lexer.line, lexer.col);
 
-        while lexer.c.is_alphanumeric() {
+        while lexer.c.is_alphanumeric() || lexer.c == '_' {
             // Keep going til its some other type of character like space or semi
             name.push(lexer.c);
             Lexer::next(lexer);
@@ -162,6 +217,15 @@ impl Lexer {
         super::make_token_mut!(TokenType::Dot, ".", lexer);
     }
 
+    fn lex_comma(lexer: &mut Lexer) {
+        super::make_token_mut!(TokenType::Comma, ",", lexer);
+    }
+
+    fn lex_colon(lexer: &mut Lexer) {
+        super::make_token_mut!(TokenType::Colon, ":", lexer);
+    }
+
+
     /// Generate an At token, push to the stack, and advance.
     fn lex_at(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::At, "@", lexer);
@@ -177,6 +241,14 @@ impl Lexer {
 
     fn lex_exclamation(lexer: &mut Lexer) {
         super::make_token_mut!(TokenType::Exclamation, "!", lexer);
+    }
+
+    fn lex_caret(lexer: &mut Lexer) {
+        super::make_token_mut!(TokenType::Caret, "^", lexer);
+    }
+
+    fn lex_question_mark(lexer: &mut Lexer) {
+        super::make_token_mut!(TokenType::QuestionMark, "?", lexer);
     }
 
     fn lex_enclosures(lexer: &mut Lexer) {
@@ -205,9 +277,16 @@ impl Lexer {
                 '&' => Lexer::lex_and(self),
                 ';' => Lexer::lex_semi(self),
                 '.' => Lexer::lex_dot(self),
+                ',' => Lexer::lex_comma(self),
+                ':' => Lexer::lex_colon(self),
                 '@' => Lexer::lex_at(self),
                 '$' => Lexer::lex_dollar(self),
                 '!' => Lexer::lex_exclamation(self),
+                '-' => Lexer::lex_minus(self),
+                '+' => Lexer::lex_plus(self),
+                '*' => Lexer::lex_star(self),
+                '^' => Lexer::lex_caret(self),
+                '?' => Lexer::lex_question_mark(self),
                 '/' => Lexer::skip_comment(self, false),
                 '(' | ')' | '[' | ']' | '{' | '}' => Lexer::lex_enclosures(self),
                 ' ' | '\n' | '\r' => (),
@@ -223,8 +302,12 @@ impl Lexer {
                 break;
             }
 
+
+
             Lexer::next(self);
         }
+
+        Lexer::next(self);
 
         super::make_token_mut!(TokenType::Eof, "", self);
         self.tokens.clone()

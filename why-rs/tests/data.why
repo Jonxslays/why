@@ -2,10 +2,18 @@ int one = 1;
 
 int two = 2;
 .
-@three.
-int three = 3;
-&jonxslays
+@three.;
+int three = 3 ;
+&jonxslays;
 .test
-$parafoxia
+$parafoxia;
 // Comment :)
-!!!
+!!!;
+hello == 1;
+thing /= 2;
+thing *= 2;
+thing += 2;
+thing-=2;
+thing++;
+thing--;
+.
