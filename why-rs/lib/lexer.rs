@@ -168,7 +168,7 @@ impl Lexer {
         }
 
         let next = lexer.peek(1).unwrap_or_default();
-        if !['/', '*', '='].contains(&next) {
+        if next != '/' && next != '*' && next != '=' {
             super::lex_exc!(lexer, "Invalid character after a '/': '{}'", next);
         }
 
