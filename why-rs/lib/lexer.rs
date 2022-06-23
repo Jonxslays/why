@@ -407,7 +407,10 @@ impl Lexer {
         }
 
         if lexer.c == delim {
-            super::make_token_mut_ok!(TokenType::StrLiteral, content, lexer)
+            let mut token = super::make_token!(TokenType::StrLiteral, content, lexer);
+            token.loc.col = lexer.col - content.len() - 1;
+            lexer.tokens.push(token);
+            Ok(())
         } else {
             // We never closed the quote
             super::lex_exc!(lexer, "`{}` was never closed", delim)
@@ -459,7 +462,7 @@ impl Lexer {
                     } else if self.c.is_alphabetic() || self.c == '_' {
                         Lexer::lex_ident(self);
 
-                        if !self.can_advance() && !self.c.is_alphanumeric() || !(self.c == '_') {
+                        if !self.can_advance() && !self.c.is_alphanumeric() || self.c != '_' {
                             continue;
                         } else if !self.can_advance() {
                             break;

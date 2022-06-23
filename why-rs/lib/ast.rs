@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum NodeType {
     Entrypoint,
@@ -34,19 +35,19 @@ pub enum Operator {
 }
 
 #[derive(Clone, Debug)]
-pub enum AstNode {
+pub enum Node {
     Int(isize),
     Uint(usize),
     Root {
-        children: Vec<AstNode>,
+        children: Vec<Node>,
     },
     UnaryExpr {
         op: Operator,
-        child: Box<AstNode>,
+        child: Box<Node>,
     },
     BinaryExpr {
         op: Operator,
-        left: Box<AstNode>,
-        right: Box<AstNode>,
+        left: Box<Node>,
+        right: Box<Node>,
     },
 }

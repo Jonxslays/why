@@ -708,6 +708,52 @@ mod test_lexer {
     }
 
     #[test]
+    #[rustfmt::skip]
+    fn test_lex_double_quoted_string() -> Result<(), WhyExc> {
+        let src = "\"goodbye, world!\"";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_string(&mut lexer)?;
+
+        assert_eq!(
+            Token { typ: TokenType::StrLiteral, value: "goodbye, world!".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+            lexer.tokens.pop().unwrap(),
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_lex_double_quoted_string_fails() {
+        let src = "\"goodbye, world!";
+        let mut lexer = Lexer::new(src).unwrap();
+        Lexer::lex_string(&mut lexer).unwrap();
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_single_quoted_string() -> Result<(), WhyExc> {
+        let src = "'lolcat'";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_string(&mut lexer)?;
+
+        assert_eq!(
+            Token { typ: TokenType::StrLiteral, value: "lolcat".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+            lexer.tokens.pop().unwrap(),
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_lex_single_quoted_string_fails() {
+        let src = "'goodbye, world!";
+        let mut lexer = Lexer::new(src).unwrap();
+        Lexer::lex_string(&mut lexer).unwrap();
+    }
+
+    #[test]
     fn test_next() -> Result<(), WhyExc> {
         let src = "123\n\r";
         let mut lexer = Lexer::new(src)?;
@@ -829,6 +875,33 @@ mod test_lexer {
             Token { typ: TokenType::RBracket, value: "]".to_string(), loc: Loc { line: 1, col: 41 }, addtl: None },
             Token { typ: TokenType::Semi, value: ";".to_string(), loc: Loc { line: 1, col: 42 }, addtl: None },
             Token { typ: TokenType::Eof, value: "".to_string(), loc: Loc { line: 1, col: 43 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, received_tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lexing_function_definition() -> Result<(), WhyExc> {
+        let src = "$(int num) @int {\n    @num;\n}";
+        let mut lexer = Lexer::new(src)?;
+        let received_tokens = lexer.lex()?;
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::Dollar, value: "$".to_string(), loc: Loc::default(), addtl: None },
+            Token { typ: TokenType::LParen, value: "(".to_string(), loc: Loc { line: 1, col: 2 }, addtl: None },
+            Token { typ: TokenType::Ident, value: "int".to_string(), loc: Loc { line: 1, col: 3 }, addtl: None },
+            Token { typ: TokenType::Ident, value: "num".to_string(), loc: Loc { line: 1, col: 7 }, addtl: None },
+            Token { typ: TokenType::RParen, value: ")".to_string(), loc: Loc { line: 1, col: 10 }, addtl: None },
+            Token { typ: TokenType::At, value: "@".to_string(), loc: Loc { line: 1, col: 12 }, addtl: None },
+            Token { typ: TokenType::Ident, value: "int".to_string(), loc: Loc { line: 1, col: 13 }, addtl: None },
+            Token { typ: TokenType::LBrace, value: "{".to_string(), loc: Loc { line: 1, col: 17 }, addtl: None },
+            Token { typ: TokenType::At, value: "@".to_string(), loc: Loc { line: 2, col: 5 }, addtl: None },
+            Token { typ: TokenType::Ident, value: "num".to_string(), loc: Loc { line: 2, col: 6 }, addtl: None },
+            Token { typ: TokenType::Semi, value: ";".to_string(), loc: Loc { line: 2, col: 9 }, addtl: None },
+            Token { typ: TokenType::RBrace, value: "}".to_string(), loc: Loc { line: 3, col: 1 }, addtl: None },
+            Token { typ: TokenType::Eof, value: "".to_string(), loc: Loc { line: 3, col: 2 }, addtl: None },
         ];
 
         assert_eq!(expected_tokens, received_tokens);

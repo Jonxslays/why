@@ -5,7 +5,7 @@ pub mod macros;
 mod parser;
 mod tokens;
 
-pub use ast::AstNode;
+pub use ast::Node;
 pub use internal::WhyExc;
 pub use lexer::Lexer;
 pub use parser::Parser;

@@ -1,10 +1,10 @@
-use super::AstNode;
+use super::Node;
 use super::Token;
-use super::TokenType;
+// use super::TokenType;
 
 #[derive(Clone, Debug)]
 pub struct Parser {
-    pub root: AstNode,
+    pub root: Node,
     pub tokens: Vec<Token>,
     pub idx: usize,
 }
@@ -13,7 +13,7 @@ impl Parser {
     #[must_use]
     pub fn new(tokens: Vec<Token>) -> Self {
         Self {
-            root: AstNode::Root { children: vec![] },
+            root: Node::Root { children: vec![] },
             tokens,
             idx: 0,
         }
@@ -23,13 +23,13 @@ impl Parser {
         println!("Entering parse loop...");
 
         while self.idx < self.tokens.len() {
-            let current = &self.tokens[self.idx];
+            // let current = &self.tokens[self.idx];
 
-            match current.typ {
-                TokenType::NumLiteral => {}
-                TokenType::Ident => {}
-                _ => (),
-            }
+            // match current.typ {
+            //     TokenType::NumLiteral => {}
+            //     TokenType::Ident => {}
+            //     _ => (),
+            // }
         }
     }
 }
