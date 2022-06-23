@@ -59,6 +59,11 @@ impl Lexer {
         c == '\n' || c == '\r'
     }
 
+    #[must_use]
+    pub fn can_be_ident(c: char) -> bool {
+        c.is_alphanumeric() || c == '_'
+    }
+
     /// Moves to the next character for further lexing.
     pub fn next(lexer: &mut Lexer) {
         if Lexer::is_newline(lexer.c) {
@@ -251,13 +256,13 @@ impl Lexer {
         let mut token = Token::at(TokenType::Ident, lexer.line, lexer.col);
         let mut name = String::new();
 
-        while lexer.can_advance() && lexer.c.is_alphanumeric() || lexer.c == '_' {
+        while lexer.can_advance() && Lexer::can_be_ident(lexer.c) {
             // Keep going til its some other type of character like space or semi
             name.push(lexer.c);
             Lexer::next(lexer);
         }
 
-        if !lexer.can_advance() && lexer.c.is_alphanumeric() || lexer.c == '_' {
+        if !lexer.can_advance() && Lexer::can_be_ident(lexer.c) {
             name.push(lexer.c);
         }
 
@@ -276,26 +281,31 @@ impl Lexer {
     /// float.
     ///     - Ex: `69.420.3` would trigger this error.
     pub fn lex_number(lexer: &mut Lexer) -> Result<(), WhyExc> {
-        let mut token = Token::at(TokenType::NumLiteral, lexer.line, lexer.col);
+        let mut token = Token::at(TokenType::NumLiteral(false), lexer.line, lexer.col);
         let mut digits = String::new();
         let mut dot_count = 0;
 
         digits.push(lexer.c);
         Lexer::next(lexer);
 
-        while lexer.can_advance() && lexer.c.is_numeric() || lexer.c == '.' {
+        while lexer.can_advance() && (lexer.c.is_numeric() || lexer.c == '.') {
             if lexer.c == '.' {
                 if dot_count > 0 {
                     // We already had a dot, there should't be another
                     return super::lex_exc!(lexer, "Invalid location for '.'");
                 }
 
+                token.typ = TokenType::NumLiteral(true);
                 dot_count += 1;
             }
 
             // Keep going til its some other type of character like space or semi
             digits.push(lexer.c);
             Lexer::next(lexer);
+        }
+
+        if !lexer.can_advance() && lexer.c.is_numeric() {
+            digits.push(lexer.c);
         }
 
         // println!("{}", digits);
@@ -427,7 +437,7 @@ impl Lexer {
     /// - If something went wrong during lexing.
     pub fn lex(&mut self) -> Result<Vec<Token>, WhyExc> {
         loop {
-            println!("Index: {}, Char: {:?}", self.idx, self.c);
+            println!("Index: {}, Max: {}, Char: {:?}", self.idx, self.src.len(), self.c);
 
             match self.c {
                 '=' => Lexer::lex_eq(self),
@@ -453,7 +463,11 @@ impl Lexer {
                         Lexer::lex_number(self)?;
 
                         if !self.can_advance() && !self.c.is_numeric() {
+                            println!("Continuing");
                             continue;
+                        } else if !self.can_advance() && self.c.is_numeric() {
+                            println!("breaking");
+                            return super::lex_exc!(self, "';' or operand expected after number {}", self.c);
                         } else if !self.can_advance() {
                             break;
                         }
@@ -462,7 +476,9 @@ impl Lexer {
                     } else if self.c.is_alphabetic() || self.c == '_' {
                         Lexer::lex_ident(self);
 
-                        if !self.can_advance() && !self.c.is_alphanumeric() || self.c != '_' {
+                        if !self.can_advance() && Lexer::can_be_ident(self.c) {
+                            return super::lex_exc!(self, "';' or operand expected after identifier {:?}", self.c);
+                        } else if !self.can_advance() && !Lexer::can_be_ident(self.c) {
                             continue;
                         } else if !self.can_advance() {
                             break;

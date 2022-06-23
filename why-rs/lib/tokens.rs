@@ -28,7 +28,7 @@ pub enum TokenType {
     And,
     SmallRArrow,
     LargeRArrow,
-    NumLiteral,
+    NumLiteral(bool),
     StrLiteral,
     Lt,
     Gt,
@@ -75,6 +75,18 @@ impl Loc {
 impl Default for Loc {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl std::fmt::Display for Loc {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Line: {}, Col: {}", self.line, self.col)
+    }
+}
+
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}({}) @ {}", self.typ, self.value, self.loc)
     }
 }
 

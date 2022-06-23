@@ -1,22 +1,27 @@
-#[allow(dead_code)]
+use std::collections::HashMap;
+use super::Token;
+
 #[derive(Clone, Debug)]
 pub enum NodeType {
     Entrypoint,
     FunctionDecl,
     FunctionParamDecl,
     VarDecl,
+    UnaryExpr,
     BinaryExpr,
     BooleanExpr,
     CallExpr,
     IdentExpr,
-    NumberExpr,
+    IntExpr(usize),
+    FloatExpr(f64),
     StringExpr,
     CompoundStmt,
     IfStmt,
     PrintStmt,
     ReturnStmt,
-    WhiteStmt,
+    WhileStmt,
     Error,
+    Null,
 }
 
 #[derive(Clone, Debug)]
@@ -32,22 +37,33 @@ pub enum Operator {
     StarStar,
     Star,
     Slash,
+    Eq,
+    EqEq,
 }
 
 #[derive(Clone, Debug)]
-pub enum Node {
-    Int(isize),
-    Uint(usize),
-    Root {
-        children: Vec<Node>,
-    },
-    UnaryExpr {
-        op: Operator,
-        child: Box<Node>,
-    },
-    BinaryExpr {
-        op: Operator,
-        left: Box<Node>,
-        right: Box<Node>,
-    },
+pub struct Node {
+    pub typ: NodeType,
+    pub children: HashMap<String, Node>,
+    pub op: Option<Operator>,
+}
+
+impl Default for Node {
+    fn default() -> Self {
+        Self { typ: NodeType::Null, children: HashMap::default(), op: None }
+    }
+}
+
+impl Node {
+    pub fn new(typ: NodeType) -> Self {
+        Self { typ, children: HashMap::new(), op: None }
+    }
+
+    pub fn new_op(typ: NodeType, op: Operator) -> Self {
+        Self { typ, children: HashMap::new(), op: Some(op) }
+    }
+
+    pub fn push_child(&mut self, key: &str, node: Node) {
+        self.children.insert(key.into(), node);
+    }
 }

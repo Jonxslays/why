@@ -6,6 +6,8 @@ mod parser;
 mod tokens;
 
 pub use ast::Node;
+pub use ast::NodeType;
+pub use ast::Operator;
 pub use internal::WhyExc;
 pub use lexer::Lexer;
 pub use parser::Parser;
