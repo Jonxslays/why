@@ -280,6 +280,9 @@ impl Lexer {
         let mut digits = String::new();
         let mut dot_count = 0;
 
+        digits.push(lexer.c);
+        Lexer::next(lexer);
+
         while lexer.can_advance() && lexer.c.is_numeric() || lexer.c == '.' {
             if lexer.c == '.' {
                 if dot_count > 0 {
@@ -293,7 +296,11 @@ impl Lexer {
             // Keep going til its some other type of character like space or semi
             digits.push(lexer.c);
             Lexer::next(lexer);
+
+            println!("C: {}, Can: {}", lexer.c, lexer.can_advance());
         }
+
+        // println!("{}", digits);
 
         token.value = digits;
         lexer.tokens.push(token);
@@ -444,9 +451,10 @@ impl Lexer {
                     if self.c.is_numeric() {
                         Lexer::lex_number(self)?;
 
-                        if !self.can_advance() {
-                            self.src = vec![*self.src.last().unwrap_or(&'\0')];
-                            return self.lex();
+                        if !self.can_advance() && !self.c.is_numeric() {
+                            continue;
+                        } else if !self.can_advance() {
+                            break;
                         }
 
                         continue;
