@@ -251,10 +251,14 @@ impl Lexer {
         let mut token = Token::at(TokenType::Ident, lexer.line, lexer.col);
         let mut name = String::new();
 
-        while lexer.c.is_alphanumeric() || lexer.c == '_' {
+        while lexer.can_advance() && lexer.c.is_alphanumeric() || lexer.c == '_' {
             // Keep going til its some other type of character like space or semi
             name.push(lexer.c);
             Lexer::next(lexer);
+        }
+
+        if !lexer.can_advance() && lexer.c.is_alphanumeric() || lexer.c == '_' {
+            name.push(lexer.c);
         }
 
         token.value = name;
@@ -276,7 +280,7 @@ impl Lexer {
         let mut digits = String::new();
         let mut dot_count = 0;
 
-        while lexer.c.is_numeric() || lexer.c == '.' {
+        while lexer.can_advance() && lexer.c.is_numeric() || lexer.c == '.' {
             if lexer.c == '.' {
                 if dot_count > 0 {
                     // We already had a dot, there should't be another
@@ -290,6 +294,9 @@ impl Lexer {
             digits.push(lexer.c);
             Lexer::next(lexer);
         }
+
+        println!("{}", digits);
+        println!("{}", lexer.c);
 
         token.value = digits;
         lexer.tokens.push(token);
@@ -439,9 +446,20 @@ impl Lexer {
                 _ => {
                     if self.c.is_numeric() {
                         Lexer::lex_number(self)?;
+
+                        if !self.can_advance() {
+                            self.src = vec![*self.src.last().unwrap()];
+                            return self.lex();
+                        }
+
                         continue;
-                    } else if self.c.is_alphabetic() {
+                    } else if self.c.is_alphabetic() || self.c == '_' {
                         Lexer::lex_ident(self);
+
+                        if !self.can_advance() {
+                            break;
+                        }
+
                         continue;
                     }
                 }

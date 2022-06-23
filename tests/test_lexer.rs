@@ -463,22 +463,22 @@ mod test_lexer {
         Ok(())
     }
 
-    // #[test]
-    // #[rustfmt::skip]
-    // fn test_lex_ident() -> Result<(), WhyExc> {
-    //     let src = "hello world";
-    //     let mut lexer = Lexer::new(src)?;
-    //     let received_tokens = lexer.lex()?;
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_ident() -> Result<(), WhyExc> {
+        let src = "hello world";
+        let mut lexer = Lexer::new(src)?;
+        let received_tokens = lexer.lex()?;
 
-    //     let expected_tokens = vec![
-    //         Token { typ: TokenType::Ident, value: "hello".to_string(), loc: Loc::default(), addtl: None },
-    //         Token { typ: TokenType::Ident, value: "world".to_string(), loc: Loc { line: 1, col: 7 }, addtl: None },
-    //         Token { typ: TokenType::Eof, value: "".to_string(), loc: Loc { line: 1, col: 13 }, addtl: None },
-    //     ];
+        let expected_tokens = vec![
+            Token { typ: TokenType::Ident, value: "hello".to_string(), loc: Loc::default(), addtl: None },
+            Token { typ: TokenType::Ident, value: "world".to_string(), loc: Loc { line: 1, col: 7 }, addtl: None },
+            Token { typ: TokenType::Eof, value: "".to_string(), loc: Loc { line: 1, col: 12 }, addtl: None },
+        ];
 
-    //     assert_eq!(expected_tokens, received_tokens);
-    //     Ok(())
-    // }
+        assert_eq!(expected_tokens, received_tokens);
+        Ok(())
+    }
 
     #[test]
     fn test_next() -> Result<(), WhyExc> {
