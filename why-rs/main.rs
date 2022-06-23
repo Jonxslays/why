@@ -9,16 +9,16 @@ fn main() -> Result<(), WhyExc> {
 
     let mut lexer = Lexer::new(&src)?;
     let tokens = lexer.lex()?;
-    println!("After lex");
+    let mut peekable_tokens = tokens.iter().peekable();
 
-    // return Ok(());
+    let mut parser = Parser::new(&mut peekable_tokens);
+    let mut ast = parser.parse()?;
 
-    for token in &tokens {
-        println!("{}", token);
-    }
+    println!("Resulting AST:");
+    println!("{:?}", ast);
 
-    let mut parser = Parser::new(tokens);
-    parser.parse();
-
+    println!();
+    println!("Result for code execution:");
+    println!("{}", ast.eval());
     Ok(())
 }

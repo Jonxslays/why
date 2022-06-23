@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TokenType {
     Eof,
     Ident,
@@ -44,6 +44,7 @@ pub enum TokenType {
     Bar,
     QuestionMark,
     Percent,
+    Null,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -58,6 +59,17 @@ pub struct Token {
     pub value: String,
     pub loc: Loc,
     pub addtl: Option<Vec<String>>,
+}
+
+impl Default for Token {
+    fn default() -> Self {
+        Self {
+            typ: TokenType::Null,
+            value: String::new(),
+            loc: Loc::default(),
+            addtl: None,
+        }
+    }
 }
 
 impl Loc {
