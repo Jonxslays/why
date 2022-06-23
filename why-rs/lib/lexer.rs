@@ -81,14 +81,14 @@ impl Lexer {
     /// Peeks at some other character nearby.
     #[must_use]
     pub fn peek(&self, offset: isize) -> Option<char> {
-        if !self.can_advance() || offset.abs() as usize >= self.src.len() {
+        if !self.can_advance() || offset.unsigned_abs() >= self.src.len() {
             return None;
         }
 
         if offset < 0 {
-            Some(self.src[self.idx - offset.abs() as usize])
+            Some(self.src[self.idx - offset.unsigned_abs()])
         } else {
-            Some(self.src[self.idx + offset.abs() as usize])
+            Some(self.src[self.idx + offset.unsigned_abs()])
         }
     }
 
@@ -295,9 +295,6 @@ impl Lexer {
             Lexer::next(lexer);
         }
 
-        println!("{}", digits);
-        println!("{}", lexer.c);
-
         token.value = digits;
         lexer.tokens.push(token);
         Ok(())
@@ -448,7 +445,7 @@ impl Lexer {
                         Lexer::lex_number(self)?;
 
                         if !self.can_advance() {
-                            self.src = vec![*self.src.last().unwrap()];
+                            self.src = vec![*self.src.last().unwrap_or(&'\0')];
                             return self.lex();
                         }
 
