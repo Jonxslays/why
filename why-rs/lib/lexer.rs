@@ -296,8 +296,6 @@ impl Lexer {
             // Keep going til its some other type of character like space or semi
             digits.push(lexer.c);
             Lexer::next(lexer);
-
-            println!("C: {}, Can: {}", lexer.c, lexer.can_advance());
         }
 
         // println!("{}", digits);
@@ -461,7 +459,9 @@ impl Lexer {
                     } else if self.c.is_alphabetic() || self.c == '_' {
                         Lexer::lex_ident(self);
 
-                        if !self.can_advance() {
+                        if !self.can_advance() && !self.c.is_alphanumeric() || !(self.c == '_') {
+                            continue;
+                        } else if !self.can_advance() {
                             break;
                         }
 

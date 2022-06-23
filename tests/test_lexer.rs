@@ -466,18 +466,245 @@ mod test_lexer {
     #[test]
     #[rustfmt::skip]
     fn test_lex_ident() -> Result<(), WhyExc> {
-        let src = "hello world";
+        let src = "hello world;";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
 
         let expected_tokens = vec![
             Token { typ: TokenType::Ident, value: "hello".to_string(), loc: Loc::default(), addtl: None },
             Token { typ: TokenType::Ident, value: "world".to_string(), loc: Loc { line: 1, col: 7 }, addtl: None },
-            Token { typ: TokenType::Eof, value: "".to_string(), loc: Loc { line: 1, col: 12 }, addtl: None },
+            Token { typ: TokenType::Semi, value: ";".to_string(), loc: Loc { line: 1, col: 12 }, addtl: None },
+            Token { typ: TokenType::Eof, value: "".to_string(), loc: Loc { line: 1, col: 13 }, addtl: None },
         ];
 
         assert_eq!(expected_tokens, received_tokens);
         Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_number() -> Result<(), WhyExc> {
+        let src = "123;";
+        let mut lexer = Lexer::new(src)?;
+        let received_tokens = lexer.lex()?;
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::NumLiteral, value: "123".to_string(), loc: Loc::default(), addtl: None },
+            Token { typ: TokenType::Semi, value: ";".to_string(), loc: Loc { line: 1, col: 4 }, addtl: None },
+            Token { typ: TokenType::Eof, value: "".to_string(), loc: Loc { line: 1, col: 5 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, received_tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_semi() -> Result<(), WhyExc> {
+        let src = ";";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_semi(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::Semi, value: ";".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_dot() -> Result<(), WhyExc> {
+        let src = ".";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_dot(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::Dot, value: ".".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_comma() -> Result<(), WhyExc> {
+        let src = ",";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_comma(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::Comma, value: ",".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_colon() -> Result<(), WhyExc> {
+        let src = ",";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_colon(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::Colon, value: ":".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_at() -> Result<(), WhyExc> {
+        let src = "@";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_at(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::At, value: "@".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_and() -> Result<(), WhyExc> {
+        let src = ",";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_and(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::And, value: "&".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_dollar() -> Result<(), WhyExc> {
+        let src = "$";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_dollar(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::Dollar, value: "$".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_exclamation() -> Result<(), WhyExc> {
+        let src = "!";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_exclamation(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::Exclamation, value: "!".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_caret() -> Result<(), WhyExc> {
+        let src = "^";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_caret(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::Caret, value: "^".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_question_mark() -> Result<(), WhyExc> {
+        let src = ",";
+        let mut lexer = Lexer::new(src)?;
+        Lexer::lex_question_mark(&mut lexer);
+
+        let expected_tokens = vec![
+            Token { typ: TokenType::QuestionMark, value: "?".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+        ];
+
+        assert_eq!(expected_tokens, lexer.tokens);
+        Ok(())
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_lex_enclosures() -> Result<(), WhyExc> {
+        let src = "[](){}";
+        let mut lexer = Lexer::new(src)?;
+
+        Lexer::lex_enclosures(&mut lexer)?;
+        Lexer::next(&mut lexer);
+        assert_eq!(
+            Token { typ: TokenType::LBracket, value: "[".to_string(), loc: Loc { line: 1, col: 1 }, addtl: None },
+            lexer.tokens.pop().unwrap(),
+        );
+
+        Lexer::lex_enclosures(&mut lexer)?;
+        Lexer::next(&mut lexer);
+        assert_eq!(
+            Token { typ: TokenType::RBracket, value: "]".to_string(), loc: Loc { line: 1, col: 2 }, addtl: None },
+            lexer.tokens.pop().unwrap(),
+        );
+
+        Lexer::lex_enclosures(&mut lexer)?;
+        Lexer::next(&mut lexer);
+        assert_eq!(
+            Token { typ: TokenType::LParen, value: "(".to_string(), loc: Loc { line: 1, col: 3 }, addtl: None },
+            lexer.tokens.pop().unwrap(),
+        );
+
+        Lexer::lex_enclosures(&mut lexer)?;
+        Lexer::next(&mut lexer);
+        assert_eq!(
+            Token { typ: TokenType::RParen, value: ")".to_string(), loc: Loc { line: 1, col: 4 }, addtl: None },
+            lexer.tokens.pop().unwrap(),
+        );
+
+        Lexer::lex_enclosures(&mut lexer)?;
+        Lexer::next(&mut lexer);
+        assert_eq!(
+            Token { typ: TokenType::LBrace, value: "{".to_string(), loc: Loc { line: 1, col: 5 }, addtl: None },
+            lexer.tokens.pop().unwrap(),
+        );
+
+        Lexer::lex_enclosures(&mut lexer)?;
+        Lexer::next(&mut lexer);
+        assert_eq!(
+            Token { typ: TokenType::RBrace, value: "}".to_string(), loc: Loc { line: 1, col: 6 }, addtl: None },
+            lexer.tokens.pop().unwrap(),
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_lex_enclosures_fails() {
+        let src = "lol";
+        let mut lexer = Lexer::new(src).unwrap();
+        Lexer::lex_enclosures(&mut lexer).unwrap();
     }
 
     #[test]
