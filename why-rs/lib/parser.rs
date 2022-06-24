@@ -4,14 +4,14 @@ use std::{iter::Peekable, slice::Iter};
 use super::Expr;
 // use super::Keyword;
 use super::Operator;
-use super::Stmt;
+// use super::Stmt;
 use super::Token;
 use super::TokenType;
 // use super::VarType;
 use super::WhyExc;
 
 type ExprRes = Result<Expr, WhyExc>;
-type StmtRes = Result<Stmt, WhyExc>;
+// type StmtRes = Result<Stmt, WhyExc>;
 
 #[derive(Debug)]
 pub struct Parser<'a> {
@@ -66,14 +66,49 @@ impl<'a> Parser<'a> {
     /// # Errors
     /// - If a syntax, or other, error was encountered, or no EOF token
     /// was found.
-    pub fn parse(&mut self) -> StmtRes {
+    pub fn parse(&mut self) -> ExprRes {
         println!();
         println!("Entering parse loop...");
         println!();
 
-        let ast = self.parse_stmt()?;
+        let ast = self.parse_expr()?;
         self.expect(TokenType::Eof)?;
-        Ok(ast)
+        Ok(Expr::Main(Box::new(ast)))
+    }
+
+    pub fn parse_assignment(&mut self) -> ExprRes {
+        let next = self.peek().unwrap();
+        let ident = next.value.clone();
+
+        self.next();
+        self.expect(TokenType::Eq)?;
+
+        let expr = self.parse_expr()?;
+        let assignment = Expr::Assign(Box::new(Expr::Ident(ident)), Box::new(expr));
+
+        Ok(assignment)
+    }
+
+    pub fn parse_parenthetic(&mut self) -> ExprRes {
+        let mut expr = Expr::Null;
+
+        loop {
+            let next = self.peek().unwrap();
+
+            match next.typ {
+                TokenType::RParen => {
+                    self.next();
+                    break;
+                }
+                TokenType::Eof => panic!("Parentheses were never closed: {:?}", next.loc),
+                _ => {
+                    let right = self.parse_expr()?;
+                    expr = Expr::Stmt(Box::new(expr), Box::new(right));
+                }
+            }
+        }
+
+        Ok(expr)
     }
 
     /// Parses a terminal ast node
@@ -96,16 +131,18 @@ impl<'a> Parser<'a> {
             TokenType::NumLiteral(true) => Ok(Expr::Float((*next).value.parse::<f64>().unwrap())),
             TokenType::StrLiteral => Ok(Expr::String((*next).value.clone())),
             TokenType::Ident => Ok(Expr::Ident((*next).value.clone())),
-            TokenType::LParen => Ok(Expr::Parenthesized(Box::new(self.parse_expr()?))),
+            TokenType::LParen => {
+                let expr = self.parse_parenthetic()?;
+                Ok(Expr::Parenthesized(Box::new(expr)))
+            },
             TokenType::Minus => {
                 let expr = self.parse_factor()?;
                 Ok(Expr::UnaryOp(Operator::Subtract, Box::new(expr)))
             }
             TokenType::Let => {
-                let ident = self.parse_expr()?;
-                self.expect(TokenType::Eq)?;
-                let expr = self.parse_expr()?;
-                Ok(Expr::Assign(Box::new(ident), Box::new(expr)))
+                let assignment = self.parse_assignment()?;
+                self.expect(TokenType::Semi)?;
+                Ok(assignment)
             }
             _ => super::exc!("Unexpected token: {}", next),
         }
@@ -171,6 +208,19 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
+    pub fn parse_let_binding(&mut self) -> ExprRes {
+        let next = self.peek().unwrap();
+        let ident = next.value.clone();
+
+        self.next();
+        self.expect(TokenType::Eq)?;
+
+        let expr = self.parse_expr()?;
+        let declaration = Expr::VarDecl(Box::new(Expr::Ident(ident)), Box::new(expr));
+
+        Ok(declaration)
+    }
+
     /// Parses an expression
     ///
     /// # Returns
@@ -183,11 +233,13 @@ impl<'a> Parser<'a> {
     /// - If there is no next token.
     pub fn parse_expr(&mut self) -> ExprRes {
         println!("Parsing expression");
+        // let current = self.next().unwrap().clone();
         let mut expr = self.parse_term()?;
         println!("Result: {:?}", expr);
 
         loop {
             let next = self.peek().unwrap();
+            println!("NEXT: {:?}", next);
 
             match next.typ {
                 TokenType::Plus => {
@@ -200,25 +252,22 @@ impl<'a> Parser<'a> {
                     let right = self.parse_term()?;
                     expr = Expr::BinaryOp(Operator::Subtract, Box::new(expr), Box::new(right));
                 }
+                TokenType::Let => {
+                    self.next();
+                    let right = self.parse_let_binding()?;
+                    expr = Expr::Stmt(Box::new(expr), Box::new(right));
+                    self.expect(TokenType::Semi)?;
+                }
+                TokenType::Ident => {
+                    let right = self.parse_assignment()?;
+                    expr = Expr::Stmt(Box::new(expr), Box::new(right));
+                    self.expect(TokenType::Semi)?;
+                }
                 TokenType::RParen => {
                     self.next();
+
                 }
-                TokenType::LBrace => {
-                    self.next();
-
-                    while self.peek().is_some() {
-                        if self.peek().unwrap().typ == TokenType::RBrace {
-                            break;
-                        }
-
-                        let expr2 = self.parse_expr()?;
-                        self.expect(TokenType::Semi)?;
-                        expr = Expr::Complex(Box::new(expr), Box::new(Stmt::Simple(expr2)));
-                    }
-
-                    // self.expect(TokenType::RBrace)?;
-                    expr = Expr::Braced(Box::new(expr));
-                }
+                TokenType::Semi => {break},
                 _ => {
                     println!("Skipping unknown token {:?}", next);
                     break;
@@ -227,51 +276,5 @@ impl<'a> Parser<'a> {
         }
 
         Ok(expr)
-    }
-
-    /// # Errors
-    /// # Panics
-    /// - if a token is unwrapped but there are no more left
-    pub fn parse_stmt(&mut self) -> StmtRes {
-        // println!("Parsing statement");
-        let mut expr = self.parse_expr()?;
-
-        // println!("expr pre stmt loop {:?}", expr);
-        println!("expr pre stmt loop {:?}", expr);
-
-        loop {
-
-            let next = self.peek().unwrap();
-            println!("Stmt next token inside loop {:?}", next);
-
-            match next.typ {
-                TokenType::For => {
-                    self.next();
-                    let tmp_var = self.parse_expr()?;
-                    self.expect(TokenType::In)?;
-                    let iterable = self.parse_expr()?;
-                    // self.expect(TokenType::LBrace)?;
-                    // let body = self.parse_stmt()?;
-
-                    // expr = Expr::Complex(Box::new(expr), Box::new(loop_qualifier));
-                    // println!("{:?}", expr);
-                    println!("Temp {:?}", tmp_var);
-                    println!("Iter {:?}", iterable);
-                    // let braced_expr = self.parse_expr()?;
-                    // expr = Expr::Complex(Box::new(expr), Box::new(Stmt::ForEach(tmp_var, iterable, braced_expr)));
-                    // println!("Body {:?}", expr);
-                }
-                TokenType::Semi => {
-                    self.next();
-                }
-                TokenType::Eof => break,
-                _ => panic!(
-                    "Syntax Error: Unknown token: {:?} at {}",
-                    next.typ, next.loc
-                ),
-            }
-        }
-
-        Ok(Stmt::Main(expr))
     }
 }

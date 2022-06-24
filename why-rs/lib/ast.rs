@@ -1,7 +1,7 @@
 use super::Token;
 use super::TokenType;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Operator {
     Add,
     Increment,
@@ -17,7 +17,7 @@ pub enum Operator {
     Dot,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Condition {
     Lt,
     Gt,
@@ -89,7 +89,7 @@ impl TryFrom<&Token> for VarType {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum VarType {
     Int,
     Float,
@@ -98,7 +98,7 @@ pub enum VarType {
     Mapping(Box<VarType>, Box<VarType>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Keyword {
     For,
     In,
@@ -130,7 +130,7 @@ impl TryFrom<&Token> for Keyword {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Expr {
     Call(Box<Expr>, Box<Expr>),
     Assign(Box<Expr>, Box<Expr>),
@@ -144,20 +144,26 @@ pub enum Expr {
     Bracketed(Box<Expr>),
     Braced(Box<Expr>),
     Conditional(Condition, Box<Expr>, Box<Expr>),
-    Complex(Box<Expr>, Box<Stmt>),
+    Stmt(Box<Expr>, Box<Expr>),
+    Main(Box<Expr>),
+    ForEach(Box<Expr>, Box<Expr>, Box<Expr>),
+    If(Condition, Box<Expr>, Box<Expr>),
+    While(Condition, Box<Expr>),
+    FunctionDecl(Box<Expr>, Box<Expr>, Box<Expr>),
+    VarDecl(Box<Expr>, Box<Expr>),
     Null,
 }
 
-#[derive(Clone, Debug)]
-pub enum Stmt {
-    Main(Expr),
-    ForEach(Expr, Expr, Expr),
-    If(Condition, Expr, Expr),
-    While(Condition, Expr),
-    FunctionDecl(Expr, Expr, Expr),
-    VarDecl(Keyword, Expr),
-    Simple(Expr),
+impl Expr {
+    pub fn is_null(&self) -> bool {
+        *self == Self::Null
+    }
 }
+
+// #[derive(Clone, Debug)]
+// pub enum Stmt {
+
+// }
 
 // impl Expr {
 //     /// Evaluate the expression.
