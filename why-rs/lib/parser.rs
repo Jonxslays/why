@@ -96,10 +96,16 @@ impl<'a> Parser<'a> {
             TokenType::NumLiteral(true) => Ok(Expr::Float((*next).value.parse::<f64>().unwrap())),
             TokenType::StrLiteral => Ok(Expr::String((*next).value.clone())),
             TokenType::Ident => Ok(Expr::Ident((*next).value.clone())),
-            TokenType::LParen => Ok(self.parse_expr()?),
+            TokenType::LParen => Ok(Expr::Parenthesized(Box::new(self.parse_expr()?))),
             TokenType::Minus => {
                 let expr = self.parse_factor()?;
                 Ok(Expr::UnaryOp(Operator::Subtract, Box::new(expr)))
+            }
+            TokenType::Let => {
+                let ident = self.parse_expr()?;
+                self.expect(TokenType::Eq)?;
+                let expr = self.parse_expr()?;
+                Ok(Expr::Assign(Box::new(ident), Box::new(expr)))
             }
             _ => super::exc!("Unexpected token: {}", next),
         }
@@ -194,13 +200,24 @@ impl<'a> Parser<'a> {
                     let right = self.parse_term()?;
                     expr = Expr::BinaryOp(Operator::Subtract, Box::new(expr), Box::new(right));
                 }
-                TokenType::Semi => {
-                    // End of the statement
-                    break;
-                }
                 TokenType::RParen => {
                     self.next();
-                    expr = Expr::Parenthesized(Box::new(expr));
+                }
+                TokenType::LBrace => {
+                    self.next();
+
+                    while self.peek().is_some() {
+                        if self.peek().unwrap().typ == TokenType::RBrace {
+                            break;
+                        }
+
+                        let expr2 = self.parse_expr()?;
+                        self.expect(TokenType::Semi)?;
+                        expr = Expr::Complex(Box::new(expr), Box::new(Stmt::Simple(expr2)));
+                    }
+
+                    // self.expect(TokenType::RBrace)?;
+                    expr = Expr::Braced(Box::new(expr));
                 }
                 _ => {
                     println!("Skipping unknown token {:?}", next);
@@ -217,28 +234,44 @@ impl<'a> Parser<'a> {
     /// - if a token is unwrapped but there are no more left
     pub fn parse_stmt(&mut self) -> StmtRes {
         // println!("Parsing statement");
-        let expr = self.parse_expr()?;
-        let stmt = Stmt::Simple(expr);
+        let mut expr = self.parse_expr()?;
 
         // println!("expr pre stmt loop {:?}", expr);
-        println!("stmt pre stmt loop {:?}", stmt);
+        println!("expr pre stmt loop {:?}", expr);
 
         loop {
-            self.expect(TokenType::Semi)?;
+
             let next = self.peek().unwrap();
             println!("Stmt next token inside loop {:?}", next);
 
             match next.typ {
+                TokenType::For => {
+                    self.next();
+                    let tmp_var = self.parse_expr()?;
+                    self.expect(TokenType::In)?;
+                    let iterable = self.parse_expr()?;
+                    // self.expect(TokenType::LBrace)?;
+                    // let body = self.parse_stmt()?;
+
+                    // expr = Expr::Complex(Box::new(expr), Box::new(loop_qualifier));
+                    // println!("{:?}", expr);
+                    println!("Temp {:?}", tmp_var);
+                    println!("Iter {:?}", iterable);
+                    // let braced_expr = self.parse_expr()?;
+                    // expr = Expr::Complex(Box::new(expr), Box::new(Stmt::ForEach(tmp_var, iterable, braced_expr)));
+                    // println!("Body {:?}", expr);
+                }
+                TokenType::Semi => {
+                    self.next();
+                }
                 TokenType::Eof => break,
                 _ => panic!(
                     "Syntax Error: Unknown token: {:?} at {}",
                     next.typ, next.loc
                 ),
             }
-
-            // self.expect(TokenType::Semi)?;
         }
 
-        Ok(stmt)
+        Ok(Stmt::Main(expr))
     }
 }

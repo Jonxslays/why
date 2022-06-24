@@ -15,7 +15,6 @@ pub enum Operator {
     Mult,
     Div,
     Dot,
-    Assign,
 }
 
 #[derive(Clone, Debug)]
@@ -61,7 +60,7 @@ impl TryFrom<&Token> for Operator {
             TokenType::Star => Ok(Operator::Mult),
             TokenType::Slash => Ok(Operator::Div),
             TokenType::Dot => Ok(Operator::Dot),
-            TokenType::Eq => Ok(Operator::Assign),
+            // TokenType::Eq => Ok(Operator::Assign),
             _ => Err("Failed to convert operator token"),
         }
     }
@@ -143,19 +142,21 @@ pub enum Expr {
     Ident(String),
     Parenthesized(Box<Expr>),
     Bracketed(Box<Expr>),
+    Braced(Box<Expr>),
     Conditional(Condition, Box<Expr>, Box<Expr>),
+    Complex(Box<Expr>, Box<Stmt>),
     Null,
 }
 
 #[derive(Clone, Debug)]
 pub enum Stmt {
-    Simple(Expr),
-    Complex(Box<Stmt>, Box<Stmt>),
-    ForEach(Keyword, Expr, Keyword, Expr, Expr),
+    Main(Expr),
+    ForEach(Expr, Expr, Expr),
     If(Condition, Expr, Expr),
     While(Condition, Expr),
     FunctionDecl(Expr, Expr, Expr),
     VarDecl(Keyword, Expr),
+    Simple(Expr),
 }
 
 // impl Expr {
