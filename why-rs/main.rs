@@ -12,13 +12,12 @@ fn main() -> Result<(), WhyExc> {
     let mut peekable_tokens = tokens.iter().peekable();
 
     let mut parser = Parser::new(&mut peekable_tokens);
-    let mut ast = parser.parse()?;
+    let ast = parser.parse()?;
 
     println!("Resulting AST:");
     println!("{:?}", ast);
 
     println!();
-    println!("Result for code execution:");
-    println!("{}", ast.eval());
+
     Ok(())
 }

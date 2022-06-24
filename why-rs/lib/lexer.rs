@@ -437,12 +437,12 @@ impl Lexer {
     /// - If something went wrong during lexing.
     pub fn lex(&mut self) -> Result<Vec<Token>, WhyExc> {
         loop {
-            println!(
-                "Index: {}, Max: {}, Char: {:?}",
-                self.idx,
-                self.src.len(),
-                self.c
-            );
+            // println!(
+            //     "Index: {}, Max: {}, Char: {:?}",
+            //     self.idx,
+            //     self.src.len(),
+            //     self.c
+            // );
 
             match self.c {
                 '=' => Lexer::lex_eq(self),
@@ -468,15 +468,9 @@ impl Lexer {
                         Lexer::lex_number(self)?;
 
                         if !self.can_advance() && !self.c.is_numeric() {
-                            println!("Continuing");
                             continue;
                         } else if !self.can_advance() && self.c.is_numeric() {
-                            println!("breaking");
-                            return super::lex_exc!(
-                                self,
-                                "';' or operand expected after number {}",
-                                self.c
-                            );
+                            break;
                         } else if !self.can_advance() {
                             break;
                         }

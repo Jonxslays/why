@@ -1,22 +1,22 @@
 #[macro_export]
 macro_rules! exc {
     ($msg:literal) => { {
-        let error = format!("Error!\n --> {}", $msg);
+        let error = format!("Error! --> {}", $msg);
         Err($crate::WhyExc::new(error))
     }};
 
     ($msg:literal, $($args:ident),*) => {{
-        let error = format!("Error!\n --> {}", format!($msg, $($args),*));
+        let error = format!("Error! --> {}", format!($msg, $($args),*));
         Err($crate::WhyExc::new(error))
     }};
 
     ($msg:literal, $($args:literal),*) => {{
-        let error = format!("Error!\n --> {}", format!($msg, $($args),*));
+        let error = format!("Error! --> {}", format!($msg, $($args),*));
         Err($crate::WhyExc::new(error))
     }};
 
     ($msg:literal, $($args:expr),*) => {{
-        let error = format!("Error!\n --> {}", format!($msg, $($args),*));
+        let error = format!("Error! --> {}", format!($msg, $($args),*));
         Err($crate::WhyExc::new(error))
     }};
 }
@@ -25,7 +25,7 @@ macro_rules! exc {
 macro_rules! lex_exc {
     ($lexer:ident, $msg:literal) => {{
         let error = format!("Error! {}", format!(
-            "line {}, column {}:\n --> {}",
+            "line {}, column {}: --> {}",
             $lexer.line, $lexer.col, $msg,
         ));
 
@@ -34,7 +34,7 @@ macro_rules! lex_exc {
 
     ($lexer:ident, $msg:literal, $($args:ident),*) => {{
         let error = format!("Error! {}", format!(
-            "line {}, column {}:\n --> {}",
+            "line {}, column {}: --> {}",
             $lexer.line, $lexer.col, format!($msg, $($args),*)
         ));
 
@@ -43,7 +43,7 @@ macro_rules! lex_exc {
 
     ($lexer:ident, $msg:literal, $($args:literal),*) => {{
         let error = format!("Error! {}", format!(
-            "line {}, column {}:\n --> {}",
+            "line {}, column {}: --> {}",
             $lexer.line, $lexer.col, format!($msg, $($args),*)
         ));
 
@@ -52,7 +52,7 @@ macro_rules! lex_exc {
 
     ($lexer:ident, $msg:literal, $($args:expr),*) => {{
         let error = format!("Error! {}", format!(
-            "line {}, column {}:\n --> {}",
+            "line {}, column {}: --> {}",
             $lexer.line, $lexer.col, format!($msg, $($args),*)
         ));
 

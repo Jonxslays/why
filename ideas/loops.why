@@ -32,10 +32,10 @@ my_dict@=>(key, value) {
 }
 int number = 0;
 // A while true loop
-@->true! {
+@->(true) {
     (number > 100)? {
-        @!; // Break out of the loop early
-    } !-> {
+        @; // Break out of the loop early
+    } -> {
         print("Number: {++number}");
     }
 }
