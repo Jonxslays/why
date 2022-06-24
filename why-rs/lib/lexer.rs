@@ -396,6 +396,8 @@ impl Lexer {
         }
     }
 
+    /// # Errors
+    /// - If an unexpected comparison op is received.
     pub fn lex_comparison(lexer: &mut Lexer) -> Result<(), WhyExc> {
         let next = lexer.peek(1).unwrap_or_default();
 
@@ -508,8 +510,6 @@ impl Lexer {
 
                         if !self.can_advance() && !self.c.is_numeric() {
                             continue;
-                        } else if !self.can_advance() && self.c.is_numeric() {
-                            break;
                         } else if !self.can_advance() {
                             break;
                         }

@@ -15,6 +15,7 @@ pub enum Operator {
     Mult,
     Div,
     Dot,
+    Assign,
 }
 
 #[derive(Clone, Debug)]
@@ -60,6 +61,7 @@ impl TryFrom<&Token> for Operator {
             TokenType::Star => Ok(Operator::Mult),
             TokenType::Slash => Ok(Operator::Div),
             TokenType::Dot => Ok(Operator::Dot),
+            TokenType::Eq => Ok(Operator::Assign),
             _ => Err("Failed to convert operator token"),
         }
     }
@@ -106,32 +108,55 @@ pub enum Keyword {
     Break,
     Return,
     Let,
+    Else,
+    Const,
+}
+
+impl TryFrom<&Token> for Keyword {
+    type Error = &'static str;
+
+    fn try_from(token: &Token) -> Result<Self, Self::Error> {
+        match token.typ {
+            TokenType::For => Ok(Keyword::For),
+            TokenType::In => Ok(Keyword::In),
+            TokenType::If => Ok(Keyword::If),
+            TokenType::Is => Ok(Keyword::Is),
+            TokenType::Break => Ok(Keyword::Break),
+            TokenType::Return => Ok(Keyword::Return),
+            TokenType::Let => Ok(Keyword::Let),
+            TokenType::Else => Ok(Keyword::Else),
+            TokenType::Const => Ok(Keyword::Const),
+            _ => Err("Failed to convert operator token"),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
 pub enum Expr {
     Call(Box<Expr>, Box<Expr>),
     Assign(Box<Expr>, Box<Expr>),
-    Reassign(Box<Expr>, Box<Expr>),
     BinaryOp(Operator, Box<Expr>, Box<Expr>),
     UnaryOp(Operator, Box<Expr>),
     Int(i64),
     Float(f64),
     String(String),
     Ident(String),
-    Keyword(Keyword),
-    Stmt(Box<Expr>),
-    Complex(Box<Expr>, Box<Expr>),
+    Parenthesized(Box<Expr>),
+    Bracketed(Box<Expr>),
+    Conditional(Condition, Box<Expr>, Box<Expr>),
     Null,
 }
 
-// #[derive(Clone, Debug)]
-// pub enum Stmt {
-//     Complex(Box<Stmt>, Box<Stmt>),
-//     If(Condition, Box<Stmt>),
-//     While(Condition, Box<Stmt>),
-//     Simple(Expr),
-// }
+#[derive(Clone, Debug)]
+pub enum Stmt {
+    Simple(Expr),
+    Complex(Box<Stmt>, Box<Stmt>),
+    ForEach(Keyword, Expr, Keyword, Expr, Expr),
+    If(Condition, Expr, Expr),
+    While(Condition, Expr),
+    FunctionDecl(Expr, Expr, Expr),
+    VarDecl(Keyword, Expr),
+}
 
 // impl Expr {
 //     /// Evaluate the expression.

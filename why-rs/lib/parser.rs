@@ -2,16 +2,16 @@ use std::{iter::Peekable, slice::Iter};
 
 // use super::Condition;
 use super::Expr;
+// use super::Keyword;
 use super::Operator;
-// use super::Stmt;
-use super::Keyword;
+use super::Stmt;
 use super::Token;
 use super::TokenType;
 // use super::VarType;
 use super::WhyExc;
 
 type ExprRes = Result<Expr, WhyExc>;
-// type StmtRes = Result<Stmt, WhyExc>;
+type StmtRes = Result<Stmt, WhyExc>;
 
 #[derive(Debug)]
 pub struct Parser<'a> {
@@ -66,12 +66,12 @@ impl<'a> Parser<'a> {
     /// # Errors
     /// - If a syntax, or other, error was encountered, or no EOF token
     /// was found.
-    pub fn parse(&mut self) -> ExprRes {
+    pub fn parse(&mut self) -> StmtRes {
         println!();
         println!("Entering parse loop...");
         println!();
 
-        let ast = self.parse_expr()?;
+        let ast = self.parse_stmt()?;
         self.expect(TokenType::Eof)?;
         Ok(ast)
     }
@@ -96,28 +96,11 @@ impl<'a> Parser<'a> {
             TokenType::NumLiteral(true) => Ok(Expr::Float((*next).value.parse::<f64>().unwrap())),
             TokenType::StrLiteral => Ok(Expr::String((*next).value.clone())),
             TokenType::Ident => Ok(Expr::Ident((*next).value.clone())),
-            TokenType::If => Ok(Expr::Keyword(Keyword::If)),
-            TokenType::For => Ok(Expr::Keyword(Keyword::For)),
-            TokenType::In => Ok(Expr::Keyword(Keyword::In)),
-            TokenType::Is => Ok(Expr::Keyword(Keyword::Is)),
-            TokenType::Break => Ok(Expr::Keyword(Keyword::Break)),
-            TokenType::Return => Ok(Expr::Keyword(Keyword::Return)),
-            TokenType::Let => Ok(Expr::Keyword(Keyword::Let)),
-            // TokenType::LParen => {
-            //     let expr = self.parse_expr()?;
-            //     self.expect(TokenType::RParen)?;
-            //     Ok(expr)
-            // }
+            TokenType::LParen => Ok(self.parse_expr()?),
             TokenType::Minus => {
                 let expr = self.parse_factor()?;
                 Ok(Expr::UnaryOp(Operator::Subtract, Box::new(expr)))
             }
-            TokenType::Eq => {
-                self.next();
-                let expr = self.parse_expr()?;
-                Ok(Expr::Stmt(Box::new(expr)))
-            }
-            TokenType::Eof => Ok(Expr::Null),
             _ => super::exc!("Unexpected token: {}", next),
         }
     }
@@ -169,62 +152,13 @@ impl<'a> Parser<'a> {
             let next = self.peek().unwrap();
             let op = Operator::try_from(*next);
 
-            if op.is_err() {
-                break;
-            } else {
+            if let Ok(operand) = op {
                 self.next();
                 let right = self.parse_factor()?;
 
-                expr = Expr::BinaryOp(op.unwrap(), Box::new(expr), Box::new(right));
-            }
-        }
-
-        Ok(expr)
-    }
-
-    pub fn parse_var_decl(&mut self) -> ExprRes {
-        println!("Parsing assign");
-        let mut expr = self.parse_term()?;
-        println!("Assign exp: {:?}", expr);
-
-        if let Expr::Keyword(Keyword::Let) = expr {
-            let token = self.next().unwrap();
-            let token_value = token.value.clone();
-
-            match token.typ {
-                TokenType::Ident => {
-                    self.expect(TokenType::Eq)?;
-                    let right = self.parse_expr()?;
-                    println!("Before culprit var decl");
-                    // self.expect(TokenType::Semi)?;
-                    println!("After culprit");
-                    // We overwrite the let binding with the an
-                    // assignment expression
-                    expr = Expr::Assign(Box::new(Expr::Ident(token_value)), Box::new(right));
-                }
-                _ => panic!("Unexpected token after let binding: {:?}", token),
-            }
-        } else if let Expr::Ident(ident) = expr {
-            self.expect(TokenType::Eq)?;
-            let right = self.parse_expr()?;
-            expr = Expr::Reassign(Box::new(Expr::Ident(ident)), Box::new(right));
-        } else if let Expr::BinaryOp(Operator::Dot, _, _) = expr {
-            self.expect(TokenType::LParen)?;
-
-            let maybe_next = self.peek();
-            if let Some(next) = maybe_next {
-                match next.typ {
-                    TokenType::RParen => {
-                        self.next();
-                        self.expect(TokenType::Semi)?;
-                        expr = Expr::Call(Box::new(expr), Box::new(Expr::Null));
-                    }
-                    _ => {
-                        self.next();
-                        let right = self.parse_expr()?;
-                        expr = Expr::Call(Box::new(expr), Box::new(right));
-                    }
-                }
+                expr = Expr::BinaryOp(operand, Box::new(expr), Box::new(right));
+            } else {
+                break;
             }
         }
 
@@ -243,28 +177,13 @@ impl<'a> Parser<'a> {
     /// - If there is no next token.
     pub fn parse_expr(&mut self) -> ExprRes {
         println!("Parsing expression");
-        let mut expr = self.parse_var_decl()?;
-        // let mut expr = self.parse_term()?;
+        let mut expr = self.parse_term()?;
         println!("Result: {:?}", expr);
-
-        // match expr {
-        //     Expr::Null => return Ok(expr),
-        //     _ => (),
-        // }
 
         loop {
             let next = self.peek().unwrap();
 
             match next.typ {
-                TokenType::Ident => {
-                    let right = self.parse_expr()?;
-                    expr = Expr::Complex(Box::new(expr), Box::new(right));
-                    println!("before expr culprit");
-                    // self.expect(TokenType::Semi)?;
-                    println!("after expr culprit");
-                    println!("{:?}", expr);
-                    println!("Completed ident reassign expr");
-                }
                 TokenType::Plus => {
                     self.next();
                     let right = self.parse_term()?;
@@ -275,28 +194,13 @@ impl<'a> Parser<'a> {
                     let right = self.parse_term()?;
                     expr = Expr::BinaryOp(Operator::Subtract, Box::new(expr), Box::new(right));
                 }
-                TokenType::Eq => {
-                    self.next();
-                    let right = self.parse_term()?;
-                    expr = Expr::Stmt(Box::new(right));
-                }
-                // TokenType::LParen => {
-                //     println!("Handling lparen in expr");
-                //     self.next();
-                //     let right = self.parse_expr()?;
-                //     expr = Expr::Stmt(Box::new(right));
-                // }
                 TokenType::Semi => {
-                    println!("handling semi in parse expr");
-                    self.next();
-                    let right = self.parse_expr()?;
-                    expr = Expr::Complex(Box::new(expr), Box::new(right));
-                    // break;
+                    // End of the statement
+                    break;
                 }
-                TokenType::Let => {
-                    let right = self.parse_expr()?;
-                    self.expect(TokenType::Semi)?;
-                    expr = Expr::Complex(Box::new(expr), Box::new(right));
+                TokenType::RParen => {
+                    self.next();
+                    expr = Expr::Parenthesized(Box::new(expr));
                 }
                 _ => {
                     println!("Skipping unknown token {:?}", next);
@@ -308,32 +212,33 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    // /// # Errors
-    // /// - if a token is unwrapped but there are no more left
-    // pub fn parse_stmt(&mut self) -> StmtRes {
-    //     // println!("Parsing statement");
-    //     let expr = self.parse_expr()?;
-    //     let mut stmt = Stmt::Simple(expr);
+    /// # Errors
+    /// # Panics
+    /// - if a token is unwrapped but there are no more left
+    pub fn parse_stmt(&mut self) -> StmtRes {
+        // println!("Parsing statement");
+        let expr = self.parse_expr()?;
+        let stmt = Stmt::Simple(expr);
 
-    //     loop {
-    //         let next = self.peek().unwrap();
-    //         // println!("{}", next);
+        // println!("expr pre stmt loop {:?}", expr);
+        println!("stmt pre stmt loop {:?}", stmt);
 
-    //         match next.typ {
-    //             TokenType::Semi => {
-    //                 self.next();
-    //                 let right = self.parse_expr()?;
-    //                 stmt = Stmt::Complex(Box::new(stmt), Box::new(Stmt::Simple(right)));
-    //             }
-    //             TokenType::Ident => {
-    //                 let right = self.parse_expr()?;
-    //                 stmt = Stmt::Complex(Box::new(stmt), Box::new(Stmt::Simple(right)));
-    //             }
-    //             TokenType::Eof => break,
-    //             _ => panic!("Syntax error on {}: {:?}", next.loc, next.value),
-    //         }
-    //     }
+        loop {
+            self.expect(TokenType::Semi)?;
+            let next = self.peek().unwrap();
+            println!("Stmt next token inside loop {:?}", next);
 
-    //     Ok(stmt)
-    // }
+            match next.typ {
+                TokenType::Eof => break,
+                _ => panic!(
+                    "Syntax Error: Unknown token: {:?} at {}",
+                    next.typ, next.loc
+                ),
+            }
+
+            // self.expect(TokenType::Semi)?;
+        }
+
+        Ok(stmt)
+    }
 }

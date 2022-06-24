@@ -52,6 +52,8 @@ pub enum TokenType {
     QuestionMark,
     Percent,
     Null,
+    Else,
+    Const,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
