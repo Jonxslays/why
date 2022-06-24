@@ -3,7 +3,6 @@ use super::TokenType;
 
 #[derive(Clone, Debug)]
 pub enum Operator {
-    Assign,
     Add,
     Increment,
     IncrementBy,
@@ -15,6 +14,7 @@ pub enum Operator {
     Pow,
     Mult,
     Div,
+    Dot,
 }
 
 #[derive(Clone, Debug)]
@@ -59,7 +59,7 @@ impl TryFrom<&Token> for Operator {
             TokenType::StarStar => Ok(Operator::Pow),
             TokenType::Star => Ok(Operator::Mult),
             TokenType::Slash => Ok(Operator::Div),
-            TokenType::Eq => Ok(Operator::Assign),
+            TokenType::Dot => Ok(Operator::Dot),
             _ => Err("Failed to convert operator token"),
         }
     }
@@ -98,26 +98,40 @@ pub enum VarType {
 }
 
 #[derive(Clone, Debug)]
+pub enum Keyword {
+    For,
+    In,
+    If,
+    Is,
+    Break,
+    Return,
+    Let,
+}
+
+#[derive(Clone, Debug)]
 pub enum Expr {
-    Binary(Operator, Box<Expr>, Box<Expr>),
-    Unary(Operator, Box<Expr>),
+    Call(Box<Expr>, Box<Expr>),
+    Assign(Box<Expr>, Box<Expr>),
+    Reassign(Box<Expr>, Box<Expr>),
+    BinaryOp(Operator, Box<Expr>, Box<Expr>),
+    UnaryOp(Operator, Box<Expr>),
     Int(i64),
     Float(f64),
     String(String),
     Ident(String),
-    Assign(VarType, Box<Expr>, Box<Expr>),
-    LoopQualifier(Box<Expr>, Box<Expr>),
-    Complex(Box<Stmt>),
+    Keyword(Keyword),
+    Stmt(Box<Expr>),
+    Complex(Box<Expr>, Box<Expr>),
+    Null,
 }
 
-#[derive(Clone, Debug)]
-pub enum Stmt {
-    Complex(Box<Stmt>, Box<Stmt>),
-    If(Condition, Box<Stmt>),
-    While(Condition, Box<Stmt>),
-    Simple(Expr),
-    ForEach(Expr, Box<Stmt>),
-}
+// #[derive(Clone, Debug)]
+// pub enum Stmt {
+//     Complex(Box<Stmt>, Box<Stmt>),
+//     If(Condition, Box<Stmt>),
+//     While(Condition, Box<Stmt>),
+//     Simple(Expr),
+// }
 
 // impl Expr {
 //     /// Evaluate the expression.

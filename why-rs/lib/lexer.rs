@@ -266,6 +266,17 @@ impl Lexer {
             name.push(lexer.c);
         }
 
+        match name.as_str() {
+            "if" => token.typ = TokenType::If,
+            "is" => token.typ = TokenType::Is,
+            "in" => token.typ = TokenType::In,
+            "for" => token.typ = TokenType::For,
+            "let" => token.typ = TokenType::Let,
+            "return" => token.typ = TokenType::Return,
+            "break" => token.typ = TokenType::Break,
+            _ => (),
+        }
+
         token.value = name;
         lexer.tokens.push(token);
     }
@@ -385,6 +396,33 @@ impl Lexer {
         }
     }
 
+    pub fn lex_comparison(lexer: &mut Lexer) -> Result<(), WhyExc> {
+        let next = lexer.peek(1).unwrap_or_default();
+
+        let token = match lexer.c {
+            '<' => match next {
+                '=' => {
+                    let token = super::make_token!(TokenType::Lte, "<=", lexer);
+                    Lexer::next(lexer);
+                    Ok(token)
+                }
+                _ => Ok(super::make_token!(TokenType::Lt, "<", lexer)),
+            },
+            '>' => match next {
+                '=' => {
+                    let token = super::make_token!(TokenType::Gte, ">=", lexer);
+                    Lexer::next(lexer);
+                    Ok(token)
+                }
+                _ => Ok(super::make_token!(TokenType::Gt, ">", lexer)),
+            },
+            _ => super::lex_exc!(lexer, "Unexpected comparison op: {}", lexer.c),
+        };
+
+        lexer.tokens.push(token?);
+        Ok(())
+    }
+
     /// Lexes a string token from the current position, and adds it
     /// to the lexers internal token stack.
     ///
@@ -460,6 +498,7 @@ impl Lexer {
                 '^' => Lexer::lex_caret(self),
                 '?' => Lexer::lex_question_mark(self),
                 '/' => Lexer::skip_comment(self, false)?,
+                '<' | '>' => Lexer::lex_comparison(self)?,
                 '"' | '\'' => Lexer::lex_string(self)?,
                 ' ' | '\n' | '\r' => (),
                 '(' | ')' | '[' | ']' | '{' | '}' => Lexer::lex_enclosures(self)?,

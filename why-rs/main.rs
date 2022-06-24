@@ -9,6 +9,11 @@ fn main() -> Result<(), WhyExc> {
 
     let mut lexer = Lexer::new(&src)?;
     let tokens = lexer.lex()?;
+
+    for token in &tokens {
+        println!("{:?}", token);
+    }
+
     let mut peekable_tokens = tokens.iter().peekable();
 
     let mut parser = Parser::new(&mut peekable_tokens);

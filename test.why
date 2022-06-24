@@ -1,0 +1,22 @@
+let x = 3;
+
+let y = "hi";
+
+let z = 2 + 2 * 49;
+
+x = 45
+
+x.my_method();
+
+// if (x > 1) {
+//     x = 0
+//     break;
+// }
+
+// int one = 1;
+
+// one@->item {
+//     // stmt
+// }
+
+// 2 + 4
