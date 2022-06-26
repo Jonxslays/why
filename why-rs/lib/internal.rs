@@ -9,7 +9,7 @@ use std::fs;
 ///
 /// # Errors
 /// - If the use passed no CLI args to the program.
-pub fn collect_cli_args() -> Result<Vec<String>, WhyExc> {
+pub fn collect_cli_args() -> Result<Vec<String>, String> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() >= 2 {
@@ -26,21 +26,21 @@ pub fn collect_cli_args() -> Result<Vec<String>, WhyExc> {
 ///
 /// # Errors
 /// - If the file was unable to be read for any reason.
-pub fn read_source_file(filename: &String) -> Result<String, WhyExc> {
+pub fn read_source_file(filename: &String) -> Result<String, String> {
     match fs::read_to_string(&filename) {
         Ok(src) => Ok(src),
         Err(e) => super::exc!("Failed to read file: {:?}: {}", filename, e),
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct WhyExc {
-    pub message: String,
-}
+// #[derive(Clone, Debug)]
+// pub struct WhyExc {
+//     pub message: String,
+// }
 
-impl WhyExc {
-    #[must_use]
-    pub fn new(message: String) -> Self {
-        Self { message }
-    }
-}
+// impl WhyExc {
+//     #[must_use]
+//     pub fn new(message: String) -> Self {
+//         Self { message }
+//     }
+// }

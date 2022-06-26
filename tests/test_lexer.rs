@@ -50,10 +50,9 @@ mod test_lexer {
     use why_rs::Loc;
     use why_rs::Token;
     use why_rs::TokenType;
-    use why_rs::WhyExc;
 
     #[test]
-    fn test_new() -> Result<(), WhyExc> {
+    fn test_new() -> Result<(), String> {
         let src = "Rewrite it in rust.";
         let lexer = Lexer::new(src)?;
 
@@ -78,7 +77,7 @@ mod test_lexer {
     }
 
     #[test]
-    fn test_can_advance() -> Result<(), WhyExc> {
+    fn test_can_advance() -> Result<(), String> {
         let src = "hikari-py.dev - check it out!";
         let mut lexer = Lexer::new(src)?;
 
@@ -101,7 +100,7 @@ mod test_lexer {
     }
 
     #[test]
-    fn test_skip_whitespace() -> Result<(), WhyExc> {
+    fn test_skip_whitespace() -> Result<(), String> {
         let src = "a    b";
         let mut lexer = Lexer::new(src)?;
 
@@ -114,7 +113,7 @@ mod test_lexer {
     }
 
     #[test]
-    fn test_skip_single_line_comment() -> Result<(), WhyExc> {
+    fn test_skip_single_line_comment() -> Result<(), String> {
         let src = "// This is a comment\nhello";
         let mut lexer = Lexer::new(src)?;
 
@@ -127,7 +126,7 @@ mod test_lexer {
     }
 
     #[test]
-    fn test_skip_multiline_comment() -> Result<(), WhyExc> {
+    fn test_skip_multiline_comment() -> Result<(), String> {
         let src = "/* This is a comment\nhello */\nwoo";
         let mut lexer = Lexer::new(src)?;
 
@@ -149,7 +148,7 @@ mod test_lexer {
     }
 
     #[test]
-    fn test_end_multiline_comment() -> Result<(), WhyExc> {
+    fn test_end_multiline_comment() -> Result<(), String> {
         let multiline_ending = "*/";
         let not_multiline_ending = "*69420";
         let ending_lexer = Lexer::new(multiline_ending)?;
@@ -163,7 +162,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_eq_token() -> Result<(), WhyExc> {
+    fn test_get_eq_token() -> Result<(), String> {
         let src = "=";
         let lexer = Lexer::new(src)?;
 
@@ -177,7 +176,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_eq_token_eq_eq() -> Result<(), WhyExc> {
+    fn test_get_eq_token_eq_eq() -> Result<(), String> {
         let src = "==";
         let lexer = Lexer::new(src)?;
 
@@ -191,7 +190,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_eq_token_large_r_arrow() -> Result<(), WhyExc> {
+    fn test_get_eq_token_large_r_arrow() -> Result<(), String> {
         let src = "=>";
         let lexer = Lexer::new(src)?;
 
@@ -205,7 +204,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_eq() -> Result<(), WhyExc> {
+    fn test_lex_eq() -> Result<(), String> {
         let src = "= :)";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_eq(&mut lexer);
@@ -220,7 +219,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_eq_other() -> Result<(), WhyExc> {
+    fn test_lex_eq_other() -> Result<(), String> {
         let src = "=> :)";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_eq(&mut lexer);
@@ -235,7 +234,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_minus_token() -> Result<(), WhyExc> {
+    fn test_get_minus_token() -> Result<(), String> {
         let src = "-";
         let lexer = Lexer::new(src)?;
 
@@ -249,7 +248,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_minus_token_minus_minus() -> Result<(), WhyExc> {
+    fn test_get_minus_token_minus_minus() -> Result<(), String> {
         let src = "--";
         let lexer = Lexer::new(src)?;
 
@@ -263,7 +262,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_minus_token_minus_eq() -> Result<(), WhyExc> {
+    fn test_get_minus_token_minus_eq() -> Result<(), String> {
         let src = "-=";
         let lexer = Lexer::new(src)?;
 
@@ -277,7 +276,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_minus_token_small_r_arrow() -> Result<(), WhyExc> {
+    fn test_get_minus_token_small_r_arrow() -> Result<(), String> {
         let src = "->";
         let lexer = Lexer::new(src)?;
 
@@ -291,7 +290,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_minus() -> Result<(), WhyExc> {
+    fn test_lex_minus() -> Result<(), String> {
         let src = "- :)";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_minus(&mut lexer);
@@ -306,7 +305,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_minus_other() -> Result<(), WhyExc> {
+    fn test_lex_minus_other() -> Result<(), String> {
         let src = "-> :)";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_minus(&mut lexer);
@@ -321,7 +320,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_plus_token() -> Result<(), WhyExc> {
+    fn test_get_plus_token() -> Result<(), String> {
         let src = "+";
         let lexer = Lexer::new(src)?;
 
@@ -335,7 +334,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_plus_token_plus_plus() -> Result<(), WhyExc> {
+    fn test_get_plus_token_plus_plus() -> Result<(), String> {
         let src = "++";
         let lexer = Lexer::new(src)?;
 
@@ -349,7 +348,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_plus_token_plus_eq() -> Result<(), WhyExc> {
+    fn test_get_plus_token_plus_eq() -> Result<(), String> {
         let src = "+=";
         let lexer = Lexer::new(src)?;
 
@@ -363,7 +362,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_plus() -> Result<(), WhyExc> {
+    fn test_lex_plus() -> Result<(), String> {
         let src = "+ :)";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_plus(&mut lexer);
@@ -378,7 +377,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_plus_other() -> Result<(), WhyExc> {
+    fn test_lex_plus_other() -> Result<(), String> {
         let src = "++ :)";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_plus(&mut lexer);
@@ -393,7 +392,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_star_token() -> Result<(), WhyExc> {
+    fn test_get_star_token() -> Result<(), String> {
         let src = "*";
         let lexer = Lexer::new(src)?;
 
@@ -407,7 +406,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_star_token_star_star() -> Result<(), WhyExc> {
+    fn test_get_star_token_star_star() -> Result<(), String> {
         let src = "**";
         let lexer = Lexer::new(src)?;
 
@@ -421,7 +420,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_get_star_token_star_eq() -> Result<(), WhyExc> {
+    fn test_get_star_token_star_eq() -> Result<(), String> {
         let src = "*=";
         let lexer = Lexer::new(src)?;
 
@@ -435,7 +434,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_star() -> Result<(), WhyExc> {
+    fn test_lex_star() -> Result<(), String> {
         let src = "* :)";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_star(&mut lexer);
@@ -450,7 +449,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_star_other() -> Result<(), WhyExc> {
+    fn test_lex_star_other() -> Result<(), String> {
         let src = "** :)";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_star(&mut lexer);
@@ -465,7 +464,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_ident() -> Result<(), WhyExc> {
+    fn test_lex_ident() -> Result<(), String> {
         let src = "hello world;";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -483,7 +482,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_number() -> Result<(), WhyExc> {
+    fn test_lex_number() -> Result<(), String> {
         let src = "123;";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -500,7 +499,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_semi() -> Result<(), WhyExc> {
+    fn test_lex_semi() -> Result<(), String> {
         let src = ";";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_semi(&mut lexer);
@@ -515,7 +514,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_dot() -> Result<(), WhyExc> {
+    fn test_lex_dot() -> Result<(), String> {
         let src = ".";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_dot(&mut lexer);
@@ -530,7 +529,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_comma() -> Result<(), WhyExc> {
+    fn test_lex_comma() -> Result<(), String> {
         let src = ",";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_comma(&mut lexer);
@@ -545,7 +544,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_colon() -> Result<(), WhyExc> {
+    fn test_lex_colon() -> Result<(), String> {
         let src = ",";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_colon(&mut lexer);
@@ -560,7 +559,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_at() -> Result<(), WhyExc> {
+    fn test_lex_at() -> Result<(), String> {
         let src = "@";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_at(&mut lexer);
@@ -575,7 +574,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_and() -> Result<(), WhyExc> {
+    fn test_lex_and() -> Result<(), String> {
         let src = ",";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_and(&mut lexer);
@@ -590,7 +589,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_dollar() -> Result<(), WhyExc> {
+    fn test_lex_dollar() -> Result<(), String> {
         let src = "$";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_dollar(&mut lexer);
@@ -605,7 +604,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_exclamation() -> Result<(), WhyExc> {
+    fn test_lex_exclamation() -> Result<(), String> {
         let src = "!";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_exclamation(&mut lexer);
@@ -620,7 +619,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_caret() -> Result<(), WhyExc> {
+    fn test_lex_caret() -> Result<(), String> {
         let src = "^";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_caret(&mut lexer);
@@ -635,7 +634,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_question_mark() -> Result<(), WhyExc> {
+    fn test_lex_question_mark() -> Result<(), String> {
         let src = ",";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_question_mark(&mut lexer);
@@ -650,7 +649,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_enclosures() -> Result<(), WhyExc> {
+    fn test_lex_enclosures() -> Result<(), String> {
         let src = "[](){}";
         let mut lexer = Lexer::new(src)?;
 
@@ -709,7 +708,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_double_quoted_string() -> Result<(), WhyExc> {
+    fn test_lex_double_quoted_string() -> Result<(), String> {
         let src = "\"goodbye, world!\"";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_string(&mut lexer)?;
@@ -732,7 +731,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lex_single_quoted_string() -> Result<(), WhyExc> {
+    fn test_lex_single_quoted_string() -> Result<(), String> {
         let src = "'lolcat'";
         let mut lexer = Lexer::new(src)?;
         Lexer::lex_string(&mut lexer)?;
@@ -754,7 +753,7 @@ mod test_lexer {
     }
 
     #[test]
-    fn test_next() -> Result<(), WhyExc> {
+    fn test_next() -> Result<(), String> {
         let src = "123\n\r";
         let mut lexer = Lexer::new(src)?;
 
@@ -786,7 +785,7 @@ mod test_lexer {
     }
 
     #[test]
-    fn test_peek() -> Result<(), WhyExc> {
+    fn test_peek() -> Result<(), String> {
         let src = "abc";
         let lexer = Lexer::new(src)?;
 
@@ -799,7 +798,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lexing_int_definition() -> Result<(), WhyExc> {
+    fn test_lexing_int_definition() -> Result<(), String> {
         let src = "int my_num = 69;";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -819,7 +818,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lexing_float_definition() -> Result<(), WhyExc> {
+    fn test_lexing_float_definition() -> Result<(), String> {
         let src = "float my_float = 69.420;";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -847,7 +846,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lexing_array_definition() -> Result<(), WhyExc> {
+    fn test_lexing_array_definition() -> Result<(), String> {
         let src = "array@int my_list = [1, 2, 3, 4, 5, 6, 7];";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -883,7 +882,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lexing_function_definition() -> Result<(), WhyExc> {
+    fn test_lexing_function_definition() -> Result<(), String> {
         let src = "$(int num) @int {\n    @num;\n}";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;
@@ -910,7 +909,7 @@ mod test_lexer {
 
     #[test]
     #[rustfmt::skip]
-    fn test_lexing_mapping_definition() -> Result<(), WhyExc> {
+    fn test_lexing_mapping_definition() -> Result<(), String> {
         let src = "mapping@int->int my_dict = &{ 1->2, 3->4 };";
         let mut lexer = Lexer::new(src)?;
         let received_tokens = lexer.lex()?;

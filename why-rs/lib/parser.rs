@@ -8,10 +8,9 @@ use super::Operator;
 use super::Token;
 use super::TokenType;
 // use super::VarType;
-use super::WhyExc;
 
-type ExprRes = Result<Expr, WhyExc>;
-// type StmtRes = Result<Stmt, WhyExc>;
+type ExprRes = Result<Expr, String>;
+// type StmtRes = Result<Stmt, String>;
 
 #[derive(Debug)]
 pub struct Parser<'a> {
@@ -43,7 +42,7 @@ impl<'a> Parser<'a> {
     ///
     /// # Panics
     /// - If the next token could not be unwrapped.
-    pub fn expect(&mut self, typ: TokenType) -> Result<(), WhyExc> {
+    pub fn expect(&mut self, typ: TokenType) -> Result<(), String> {
         let next = self.next();
 
         if next.is_none() {

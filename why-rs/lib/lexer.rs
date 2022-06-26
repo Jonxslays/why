@@ -1,6 +1,6 @@
 use super::Token;
 use super::TokenType;
-use super::WhyExc;
+// use super::String;
 
 /// A lexer, for generating tokens from text.
 #[derive(Clone, Debug)]
@@ -23,11 +23,11 @@ impl Lexer {
     /// Creates a new lexer to be used on a given string.
     ///
     /// # Returns
-    /// - [`Result<Self, WhyExc>`] - The new lexer on success.
+    /// - [`Result<Self, String>`] - The new lexer on success.
     ///
     /// # Errors
     /// - If the text file was empty.
-    pub fn new(src: &str) -> Result<Self, WhyExc> {
+    pub fn new(src: &str) -> Result<Self, String> {
         let src: Vec<char> = src.chars().collect();
         let src_len = src.len();
         let character = src.first();
@@ -108,11 +108,11 @@ impl Lexer {
     /// Advances the current index/char until its no longer a comment.
     ///
     /// # Returns
-    /// - [`Result<(), WhyExc>`] - Unit type on success.
+    /// - [`Result<(), String>`] - Unit type on success.
     ///
     /// # Errors
     /// - If an invalid char was encountered after the initial `/`.
-    pub fn skip_comment(lexer: &mut Lexer, multiline: bool) -> Result<(), WhyExc> {
+    pub fn skip_comment(lexer: &mut Lexer, multiline: bool) -> Result<(), String> {
         if multiline {
             // This could be a while... :)
             while lexer.can_advance() {
@@ -281,13 +281,13 @@ impl Lexer {
     /// advance.
     ///
     /// # Returns
-    /// - [`Result<(), WhyExc>`] - Unit type on success.
+    /// - [`Result<(), String>`] - Unit type on success.
     ///
     /// # Errors
     /// - If the number had more than 1 dot in it, indicating an invalid
     /// float.
     ///     - Ex: `69.420.3` would trigger this error.
-    pub fn lex_number(lexer: &mut Lexer) -> Result<(), WhyExc> {
+    pub fn lex_number(lexer: &mut Lexer) -> Result<(), String> {
         let mut token = Token::at(TokenType::NumLiteral(false), lexer.line, lexer.col);
         let mut digits = String::new();
         let mut dot_count = 0;
@@ -375,12 +375,12 @@ impl Lexer {
     /// Lexes potential closure chars like brackets and parentheses.
     ///
     /// # Returns
-    /// - [`Result<(), WhyExc>`] - Unit type on success.
+    /// - [`Result<(), String>`] - Unit type on success.
     ///
     /// # Errors
     /// - If this function was called incorrectly on a non enclosure
     /// type char. Valid chars: `(`, `)`, `[`, `]`, `{`, `}`
-    pub fn lex_enclosures(lexer: &mut Lexer) -> Result<(), WhyExc> {
+    pub fn lex_enclosures(lexer: &mut Lexer) -> Result<(), String> {
         match lexer.c {
             '(' => super::make_token_mut_ok!(TokenType::LParen, "(", lexer),
             ')' => super::make_token_mut_ok!(TokenType::RParen, ")", lexer),
@@ -394,7 +394,7 @@ impl Lexer {
 
     /// # Errors
     /// - If an unexpected comparison op is received.
-    pub fn lex_comparison(lexer: &mut Lexer) -> Result<(), WhyExc> {
+    pub fn lex_comparison(lexer: &mut Lexer) -> Result<(), String> {
         let next = lexer.peek(1).unwrap_or_default();
 
         let token = match lexer.c {
@@ -425,11 +425,11 @@ impl Lexer {
     /// to the lexers internal token stack.
     ///
     /// # Returns
-    /// - [`Result<(), WhyExc>`] - Unit type on success.
+    /// - [`Result<(), String>`] - Unit type on success.
     ///
     /// # Errors
     /// - If the string was never closed.
-    pub fn lex_string(lexer: &mut Lexer) -> Result<(), WhyExc> {
+    pub fn lex_string(lexer: &mut Lexer) -> Result<(), String> {
         let mut content = String::new();
         let delim = lexer.c;
         Lexer::next(lexer);
@@ -466,12 +466,12 @@ impl Lexer {
     /// Lexes the text attached to this lexer.
     ///
     /// # Returns
-    /// - [`Result<Vec<Token>, WhyExc>`] - A vector containing the lexed
+    /// - [`Result<Vec<Token>, String>`] - A vector containing the lexed
     /// tokens on success.
     ///
     /// # Errors
     /// - If something went wrong during lexing.
-    pub fn lex(&mut self) -> Result<Vec<Token>, WhyExc> {
+    pub fn lex(&mut self) -> Result<Vec<Token>, String> {
         loop {
             // println!(
             //     "Index: {}, Max: {}, Char: {:?}",

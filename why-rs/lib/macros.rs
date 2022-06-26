@@ -1,62 +1,58 @@
 #[macro_export]
 macro_rules! exc {
     ($msg:literal) => { {
-        let error = format!("Error! --> {}", $msg);
-        Err($crate::WhyExc::new(error))
+        Err(format!("Error! --> {}", $msg))
     }};
 
     ($msg:literal, $($args:ident),*) => {{
-        let error = format!("Error! --> {}", format!($msg, $($args),*));
-        Err($crate::WhyExc::new(error))
+        Err(format!("Error! --> {}", format!($msg, $($args),*)))
     }};
 
     ($msg:literal, $($args:literal),*) => {{
-        let error = format!("Error! --> {}", format!($msg, $($args),*));
-        Err($crate::WhyExc::new(error))
+        Err(format!("Error! --> {}", format!($msg, $($args),*)))
     }};
 
     ($msg:literal, $($args:expr),*) => {{
-        let error = format!("Error! --> {}", format!($msg, $($args),*));
-        Err($crate::WhyExc::new(error))
+        Err(format!("Error! --> {}", format!($msg, $($args),*)))
     }};
 }
 
 #[macro_export]
 macro_rules! lex_exc {
     ($lexer:ident, $msg:literal) => {{
-        let error = format!("Error! {}", format!(
+        let error = format!(
             "line {}, column {}: --> {}",
             $lexer.line, $lexer.col, $msg,
-        ));
+        );
 
-        Err($crate::WhyExc::new(error))
+        Err(error)
     }};
 
     ($lexer:ident, $msg:literal, $($args:ident),*) => {{
-        let error = format!("Error! {}", format!(
+        let error = format!(
             "line {}, column {}: --> {}",
             $lexer.line, $lexer.col, format!($msg, $($args),*)
-        ));
+        );
 
-        Err($crate::WhyExc::new(error))
+        Err(error)
     }};
 
     ($lexer:ident, $msg:literal, $($args:literal),*) => {{
-        let error = format!("Error! {}", format!(
+        let error = format!(
             "line {}, column {}: --> {}",
             $lexer.line, $lexer.col, format!($msg, $($args),*)
-        ));
+        );
 
-        Err($crate::WhyExc::new(error))
+        Err(error)
     }};
 
     ($lexer:ident, $msg:literal, $($args:expr),*) => {{
-        let error = format!("Error! {}", format!(
+        let error = format!(
             "line {}, column {}: --> {}",
             $lexer.line, $lexer.col, format!($msg, $($args),*)
-        ));
+        );
 
-        Err($crate::WhyExc::new(error))
+        Err(error)
     }};
 }
 

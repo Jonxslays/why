@@ -1,9 +1,8 @@
 use why_rs::internal;
 use why_rs::Lexer;
 use why_rs::Parser;
-use why_rs::WhyExc;
 
-fn main() -> Result<(), WhyExc> {
+fn main() -> Result<(), String> {
     let args = internal::collect_cli_args()?;
     let src = internal::read_source_file(&args[1])?;
 
