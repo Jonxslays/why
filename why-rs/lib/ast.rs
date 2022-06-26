@@ -1,7 +1,7 @@
 use super::Token;
 use super::TokenType;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Operator {
     Add,
     Increment,
@@ -17,7 +17,7 @@ pub enum Operator {
     Dot,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Condition {
     Lt,
     Gt,
@@ -76,29 +76,29 @@ impl TryFrom<&Token> for Operator {
 //     }
 // }
 
-impl TryFrom<&Token> for VarType {
-    type Error = &'static str;
+// impl TryFrom<&Token> for VarType {
+//     type Error = &'static str;
 
-    fn try_from(token: &Token) -> Result<Self, Self::Error> {
-        match token.value.as_str() {
-            "int" => Ok(VarType::Int),
-            "string" => Ok(VarType::String),
-            "float" => Ok(VarType::Float),
-            _ => Err("Failed to convert operator token"),
-        }
-    }
-}
+//     fn try_from(token: &Token) -> Result<Self, Self::Error> {
+//         match token.value.as_str() {
+//             "int" => Ok(VarType::Int),
+//             "string" => Ok(VarType::String),
+//             "float" => Ok(VarType::Float),
+//             _ => Err("Failed to convert operator token"),
+//         }
+//     }
+// }
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum VarType {
-    Int,
-    Float,
-    String,
-    Array(Box<VarType>),
-    Mapping(Box<VarType>, Box<VarType>),
-}
+// #[derive(Clone, Debug, PartialEq)]
+// pub enum VarType {
+//     Int,
+//     Float,
+//     String,
+//     Array(Box<VarType>),
+//     Mapping(Box<VarType>, Box<VarType>),
+// }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Keyword {
     For,
     In,
@@ -116,54 +116,34 @@ impl TryFrom<&Token> for Keyword {
 
     fn try_from(token: &Token) -> Result<Self, Self::Error> {
         match token.typ {
-            TokenType::For => Ok(Keyword::For),
-            TokenType::In => Ok(Keyword::In),
-            TokenType::If => Ok(Keyword::If),
-            TokenType::Is => Ok(Keyword::Is),
-            TokenType::Break => Ok(Keyword::Break),
-            TokenType::Return => Ok(Keyword::Return),
-            TokenType::Let => Ok(Keyword::Let),
-            TokenType::Else => Ok(Keyword::Else),
-            TokenType::Const => Ok(Keyword::Const),
-            _ => Err("Failed to convert operator token"),
+            TokenType::Keyword => match token.value.as_str() {
+                "in" => Ok(Keyword::In),
+                "if" => Ok(Keyword::If),
+                "is" => Ok(Keyword::Is),
+                "break" => Ok(Keyword::Break),
+                "return" => Ok(Keyword::Return),
+                "let" => Ok(Keyword::Let),
+                "else" => Ok(Keyword::Else),
+                "const" => Ok(Keyword::Const),
+                "for" => Ok(Keyword::For),
+                _ => Err("Unknown Keyword token"),
+            },
+            _ => Err("Failed to convert keyword token"),
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr {
-    Call(Box<Expr>, Box<Expr>),
-    Assign(Box<Expr>, Box<Expr>),
+    Assign(Keyword, Box<Expr>, Box<Expr>),
     BinaryOp(Operator, Box<Expr>, Box<Expr>),
     UnaryOp(Operator, Box<Expr>),
     Int(i64),
     Float(f64),
     String(String),
     Ident(String),
-    Parenthesized(Box<Expr>),
-    Bracketed(Box<Expr>),
-    Braced(Box<Expr>),
-    Conditional(Condition, Box<Expr>, Box<Expr>),
-    Stmt(Box<Expr>, Box<Expr>),
     Main(Box<Expr>),
-    ForEach(Box<Expr>, Box<Expr>, Box<Expr>),
-    If(Condition, Box<Expr>, Box<Expr>),
-    While(Condition, Box<Expr>),
-    FunctionDecl(Box<Expr>, Box<Expr>, Box<Expr>),
-    VarDecl(Keyword, Box<Expr>, Box<Expr>),
-    Null,
 }
-
-impl Expr {
-    pub fn is_null(&self) -> bool {
-        *self == Self::Null
-    }
-}
-
-// #[derive(Clone, Debug)]
-// pub enum Stmt {
-
-// }
 
 // impl Expr {
 //     /// Evaluate the expression.

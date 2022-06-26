@@ -267,13 +267,9 @@ impl Lexer {
         }
 
         match name.as_str() {
-            "if" => token.typ = TokenType::If,
-            "is" => token.typ = TokenType::Is,
-            "in" => token.typ = TokenType::In,
-            "for" => token.typ = TokenType::For,
-            "let" => token.typ = TokenType::Let,
-            "return" => token.typ = TokenType::Return,
-            "break" => token.typ = TokenType::Break,
+            "if" | "is" | "in" | "for" | "else" | "let" | "return" | "break" | "const" => {
+                token.typ = TokenType::Keyword;
+            }
             _ => (),
         }
 
@@ -315,9 +311,9 @@ impl Lexer {
             Lexer::next(lexer);
         }
 
-        if !lexer.can_advance() && lexer.c.is_numeric() {
+        if !lexer.can_advance() && lexer.c.is_numeric() && digits.contains('.') {
             digits.push(lexer.c);
-        }
+        } // Why did we do this???
 
         // println!("{}", digits);
 
@@ -483,6 +479,9 @@ impl Lexer {
             //     self.src.len(),
             //     self.c
             // );
+
+            let next = self.peek(1).unwrap_or_default();
+            println!("NEXT: {}", next);
 
             match self.c {
                 '=' => Lexer::lex_eq(self),

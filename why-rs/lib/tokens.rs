@@ -1,13 +1,6 @@
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TokenType {
     Eof,
-    If,
-    For,
-    Let,
-    In,
-    Is,
-    Break,
-    Return,
     Ident,
     Eq,
     LParen,
@@ -51,9 +44,8 @@ pub enum TokenType {
     Bar,
     QuestionMark,
     Percent,
+    Keyword,
     Null,
-    Else,
-    Const,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

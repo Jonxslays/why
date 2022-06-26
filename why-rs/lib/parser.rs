@@ -76,18 +76,18 @@ impl<'a> Parser<'a> {
         Ok(Expr::Main(Box::new(ast)))
     }
 
-    pub fn parse_assignment(&mut self) -> ExprRes {
-        let next = self.peek().unwrap();
-        let ident = next.value.clone();
+    // pub fn parse_assignment(&mut self) -> ExprRes {
+    //     let next = self.peek().unwrap();
+    //     let ident = next.value.clone();
 
-        self.next();
-        self.expect(TokenType::Eq)?;
+    //     self.next();
+    //     self.expect(TokenType::Eq)?;
 
-        let expr = self.parse_expr()?;
-        let assignment = Expr::Assign(Box::new(Expr::Ident(ident)), Box::new(expr));
+    //     let expr = self.parse_expr()?;
+    //     let assignment = Expr::Assign(Box::new(Expr::Ident(ident)), Box::new(expr));
 
-        Ok(assignment)
-    }
+    //     Ok(assignment)
+    // }
 
     /// Parses a terminal ast node
     ///
