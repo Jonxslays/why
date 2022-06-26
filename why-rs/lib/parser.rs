@@ -89,28 +89,6 @@ impl<'a> Parser<'a> {
         Ok(assignment)
     }
 
-    pub fn parse_parenthetic(&mut self) -> ExprRes {
-        let mut expr = Expr::Null;
-
-        loop {
-            let next = self.peek().unwrap();
-
-            match next.typ {
-                TokenType::RParen => {
-                    self.next();
-                    break;
-                }
-                TokenType::Eof => panic!("Parentheses were never closed: {:?}", next.loc),
-                _ => {
-                    let right = self.parse_expr()?;
-                    expr = Expr::Stmt(Box::new(expr), Box::new(right));
-                }
-            }
-        }
-
-        Ok(expr)
-    }
-
     /// Parses a terminal ast node
     ///
     /// # Returns
@@ -131,18 +109,9 @@ impl<'a> Parser<'a> {
             TokenType::NumLiteral(true) => Ok(Expr::Float((*next).value.parse::<f64>().unwrap())),
             TokenType::StrLiteral => Ok(Expr::String((*next).value.clone())),
             TokenType::Ident => Ok(Expr::Ident((*next).value.clone())),
-            TokenType::LParen => {
-                let expr = self.parse_parenthetic()?;
-                Ok(Expr::Parenthesized(Box::new(expr)))
-            },
             TokenType::Minus => {
                 let expr = self.parse_factor()?;
                 Ok(Expr::UnaryOp(Operator::Subtract, Box::new(expr)))
-            }
-            TokenType::Let => {
-                let assignment = self.parse_assignment()?;
-                self.expect(TokenType::Semi)?;
-                Ok(assignment)
             }
             _ => super::exc!("Unexpected token: {}", next),
         }
@@ -208,19 +177,6 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    pub fn parse_let_binding(&mut self) -> ExprRes {
-        let next = self.peek().unwrap();
-        let ident = next.value.clone();
-
-        self.next();
-        self.expect(TokenType::Eq)?;
-
-        let expr = self.parse_expr()?;
-        let declaration = Expr::VarDecl(Box::new(Expr::Ident(ident)), Box::new(expr));
-
-        Ok(declaration)
-    }
-
     /// Parses an expression
     ///
     /// # Returns
@@ -252,22 +208,6 @@ impl<'a> Parser<'a> {
                     let right = self.parse_term()?;
                     expr = Expr::BinaryOp(Operator::Subtract, Box::new(expr), Box::new(right));
                 }
-                TokenType::Let => {
-                    self.next();
-                    let right = self.parse_let_binding()?;
-                    expr = Expr::Stmt(Box::new(expr), Box::new(right));
-                    self.expect(TokenType::Semi)?;
-                }
-                TokenType::Ident => {
-                    let right = self.parse_assignment()?;
-                    expr = Expr::Stmt(Box::new(expr), Box::new(right));
-                    self.expect(TokenType::Semi)?;
-                }
-                TokenType::RParen => {
-                    self.next();
-
-                }
-                TokenType::Semi => {break},
                 _ => {
                     println!("Skipping unknown token {:?}", next);
                     break;

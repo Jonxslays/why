@@ -150,7 +150,7 @@ pub enum Expr {
     If(Condition, Box<Expr>, Box<Expr>),
     While(Condition, Box<Expr>),
     FunctionDecl(Box<Expr>, Box<Expr>, Box<Expr>),
-    VarDecl(Box<Expr>, Box<Expr>),
+    VarDecl(Keyword, Box<Expr>, Box<Expr>),
     Null,
 }
 
