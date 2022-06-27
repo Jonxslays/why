@@ -266,11 +266,8 @@ impl Lexer {
             name.push(lexer.c);
         }
 
-        match name.as_str() {
-            "if" | "is" | "in" | "for" | "else" | "let" | "return" | "break" | "const" => {
-                token.typ = TokenType::Keyword;
-            }
-            _ => (),
+        if super::KEYWORDS.contains(&name.as_str()) {
+            token.typ = TokenType::Keyword;
         }
 
         token.value = name;

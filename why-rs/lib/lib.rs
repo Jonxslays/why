@@ -12,6 +12,7 @@ pub use ast::Operator;
 // pub use ast::Stmt;
 // pub use ast::VarType;
 // pub use internal::WhyExc;
+pub use internal::KEYWORDS;
 pub use lexer::Lexer;
 pub use parser::Parser;
 pub use tokens::Loc;

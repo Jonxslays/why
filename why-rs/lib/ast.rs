@@ -27,6 +27,37 @@ pub enum Condition {
     EqEq,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Keyword {
+    For,
+    In,
+    If,
+    Is,
+    Break,
+    Return,
+    Let,
+    Else,
+    Const,
+    While,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Expr {
+    Parenthesized(Box<Expr>),
+    VarAssign(Keyword, Box<Expr>, Box<Expr>),
+    VarAccess(Box<Expr>),
+    BinaryOp(Operator, Box<Expr>, Box<Expr>),
+    UnaryOp(Operator, Box<Expr>),
+    Int(i64),
+    Float(f64),
+    String(String),
+    Ident(String),
+    Main(Box<Expr>),
+    Null,
+}
+
+///////////////////////////////////////////////////////////////
+
 impl TryFrom<&Token> for Condition {
     type Error = &'static str;
 
@@ -66,6 +97,37 @@ impl TryFrom<&Token> for Operator {
     }
 }
 
+impl TryFrom<&Token> for Keyword {
+    type Error = &'static str;
+
+    fn try_from(token: &Token) -> Result<Self, Self::Error> {
+        match token.typ {
+            TokenType::Keyword => match token.value.as_str() {
+                "in" => Ok(Keyword::In),
+                "if" => Ok(Keyword::If),
+                "is" => Ok(Keyword::Is),
+                "break" => Ok(Keyword::Break),
+                "return" => Ok(Keyword::Return),
+                "let" => Ok(Keyword::Let),
+                "else" => Ok(Keyword::Else),
+                "const" => Ok(Keyword::Const),
+                "for" => Ok(Keyword::For),
+                "while" => Ok(Keyword::While),
+                _ => Err("Unknown Keyword token"),
+            },
+            _ => Err("Failed to convert keyword token"),
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////
+
+impl std::fmt::Display for Keyword {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Keyword({})", format!("'{:?}'", self).to_lowercase())
+    }
+}
+
 // pub struct EvalResult {
 //     inner: T,
 // }
@@ -97,53 +159,6 @@ impl TryFrom<&Token> for Operator {
 //     Array(Box<VarType>),
 //     Mapping(Box<VarType>, Box<VarType>),
 // }
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Keyword {
-    For,
-    In,
-    If,
-    Is,
-    Break,
-    Return,
-    Let,
-    Else,
-    Const,
-}
-
-impl TryFrom<&Token> for Keyword {
-    type Error = &'static str;
-
-    fn try_from(token: &Token) -> Result<Self, Self::Error> {
-        match token.typ {
-            TokenType::Keyword => match token.value.as_str() {
-                "in" => Ok(Keyword::In),
-                "if" => Ok(Keyword::If),
-                "is" => Ok(Keyword::Is),
-                "break" => Ok(Keyword::Break),
-                "return" => Ok(Keyword::Return),
-                "let" => Ok(Keyword::Let),
-                "else" => Ok(Keyword::Else),
-                "const" => Ok(Keyword::Const),
-                "for" => Ok(Keyword::For),
-                _ => Err("Unknown Keyword token"),
-            },
-            _ => Err("Failed to convert keyword token"),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Expr {
-    Assign(Keyword, Box<Expr>, Box<Expr>),
-    BinaryOp(Operator, Box<Expr>, Box<Expr>),
-    UnaryOp(Operator, Box<Expr>),
-    Int(i64),
-    Float(f64),
-    String(String),
-    Ident(String),
-    Main(Box<Expr>),
-}
 
 // impl Expr {
 //     /// Evaluate the expression.

@@ -28,7 +28,7 @@ pub enum TokenType {
     And,
     SmallRArrow,
     LargeRArrow,
-    NumLiteral(bool),
+    NumLiteral(bool), // Indicating whether this is a float
     StrLiteral,
     Lt,
     Gt,
@@ -99,7 +99,7 @@ impl std::fmt::Display for Loc {
 
 impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}({}) @ {}", self.typ, self.value, self.loc)
+        write!(f, "{:?}('{}') @ {}", self.typ, self.value, self.loc)
     }
 }
 

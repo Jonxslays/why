@@ -1,6 +1,10 @@
 use std::env;
 use std::fs;
 
+pub const KEYWORDS: [&str; 10] = [
+    "if", "in", "is", "break", "return", "let", "else", "const", "for", "while",
+];
+
 /// Obtains the CLI args passed to the programs execution.
 ///
 /// # Returns

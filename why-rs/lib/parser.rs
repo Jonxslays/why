@@ -1,5 +1,7 @@
 use std::{iter::Peekable, slice::Iter};
 
+use crate::Keyword;
+
 // use super::Condition;
 use super::Expr;
 // use super::Keyword;
@@ -9,7 +11,7 @@ use super::Token;
 use super::TokenType;
 // use super::VarType;
 
-type ExprRes = Result<Expr, String>;
+type ParseResult = Result<Expr, String>;
 // type StmtRes = Result<Stmt, String>;
 
 #[derive(Debug)]
@@ -60,12 +62,12 @@ impl<'a> Parser<'a> {
     /// entire program.
     ///
     /// # Returns
-    /// - [`ExprResult`] - The resulting expression on success
+    /// - [`ParseResult`] - The resulting expression on success
     ///
     /// # Errors
     /// - If a syntax, or other, error was encountered, or no EOF token
     /// was found.
-    pub fn parse(&mut self) -> ExprRes {
+    pub fn parse(&mut self) -> ParseResult {
         println!();
         println!("Entering parse loop...");
         println!();
@@ -75,7 +77,7 @@ impl<'a> Parser<'a> {
         Ok(Expr::Main(Box::new(ast)))
     }
 
-    // pub fn parse_assignment(&mut self) -> ExprRes {
+    // pub fn parse_assignment(&mut self) -> ParseResult {
     //     let next = self.peek().unwrap();
     //     let ident = next.value.clone();
 
@@ -91,7 +93,7 @@ impl<'a> Parser<'a> {
     /// Parses a terminal ast node
     ///
     /// # Returns
-    /// - [`ExprResult`] - The resulting expression on success
+    /// - [`ParseResult`] - The resulting expression on success
     ///
     /// # Errors
     /// - If a syntax, or other, error was encountered.
@@ -99,14 +101,19 @@ impl<'a> Parser<'a> {
     /// # Panics
     /// - If there is no next token, or an unexpected token was
     /// received.
-    pub fn parse_terminal(&mut self) -> ExprRes {
-        println!("Parsing terminal");
+    pub fn parse_primary(&mut self) -> ParseResult {
+        println!("Parsing primary");
         let next = self.next().unwrap();
 
         match next.typ {
             TokenType::NumLiteral(false) => Ok(Expr::Int((*next).value.parse::<i64>().unwrap())),
             TokenType::NumLiteral(true) => Ok(Expr::Float((*next).value.parse::<f64>().unwrap())),
             TokenType::StrLiteral => Ok(Expr::String((*next).value.clone())),
+            TokenType::LParen => {
+                let expr = self.parse_expr()?;
+                self.expect(TokenType::RParen)?;
+                Ok(Expr::Parenthesized(Box::new(expr)))
+            }
             TokenType::Ident => Ok(Expr::Ident((*next).value.clone())),
             TokenType::Minus => {
                 let expr = self.parse_factor()?;
@@ -119,16 +126,16 @@ impl<'a> Parser<'a> {
     /// Parses a factor
     ///
     /// # Returns
-    /// - [`ExprResult`] - The resulting expression on success
+    /// - [`ParseResult`] - The resulting expression on success
     ///
     /// # Errors
     /// - If a syntax, or other, error was encountered.
     ///
     /// # Panics
     /// - If there is no next token.
-    pub fn parse_factor(&mut self) -> ExprRes {
+    pub fn parse_factor(&mut self) -> ParseResult {
         println!("Parsing factor");
-        let expr = self.parse_terminal()?;
+        let expr = self.parse_primary()?;
         let next = self.peek().unwrap();
 
         if next.typ == TokenType::StarStar {
@@ -148,14 +155,14 @@ impl<'a> Parser<'a> {
     /// Parses a term
     ///
     /// # Returns
-    /// - [`ExprResult`] - The resulting expression on success
+    /// - [`ParseResult`] - The resulting expression on success
     ///
     /// # Errors
     /// - If a syntax, or other, error was encountered.
     ///
     /// # Panics
     /// - If there is no next token.
-    pub fn parse_term(&mut self) -> ExprRes {
+    pub fn parse_term(&mut self) -> ParseResult {
         println!("Parsing term");
         let mut expr = self.parse_factor()?;
 
@@ -176,36 +183,61 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
+    // pub fn parse_keyword(&mut self, expr: &mut Option<Expr>) -> ParseResult {
+    //     todo!()
+    // }
+
     /// Parses an expression
     ///
     /// # Returns
-    /// - [`ExprResult`] - The resulting expression on success
+    /// - [`ParseResult`] - The resulting expression on success
     ///
     /// # Errors
     /// - If a syntax, or other, error was encountered.
     ///
     /// # Panics
     /// - If there is no next token.
-    pub fn parse_expr(&mut self) -> ExprRes {
+    pub fn parse_expr(&mut self) -> ParseResult {
         println!("Parsing expression");
+        let mut expr: Option<Expr> = None;
         // let current = self.next().unwrap().clone();
-        let mut expr = self.parse_term()?;
-        println!("Result: {:?}", expr);
 
         loop {
             let next = self.peek().unwrap();
             println!("NEXT: {:?}", next);
 
             match next.typ {
+                TokenType::Keyword => {
+                    let keyword = Keyword::try_from(*next)?;
+                    match keyword {
+                        Keyword::Let => {
+                            println!("Got a let");
+                            break;
+                        }
+                        _ => return super::exc!("{} is not implemented yet", keyword),
+                    }
+                }
                 TokenType::Plus => {
+                    expr = Some(self.parse_term()?);
                     self.next();
+
                     let right = self.parse_term()?;
-                    expr = Expr::BinaryOp(Operator::Add, Box::new(expr), Box::new(right));
+                    expr = Some(Expr::BinaryOp(
+                        Operator::Add,
+                        Box::new(expr.unwrap()),
+                        Box::new(right),
+                    ));
                 }
                 TokenType::Minus => {
+                    expr = Some(self.parse_term()?);
                     self.next();
+
                     let right = self.parse_term()?;
-                    expr = Expr::BinaryOp(Operator::Subtract, Box::new(expr), Box::new(right));
+                    expr = Some(Expr::BinaryOp(
+                        Operator::Subtract,
+                        Box::new(expr.unwrap()),
+                        Box::new(right),
+                    ));
                 }
                 _ => {
                     println!("Skipping unknown token {:?}", next);
@@ -214,6 +246,6 @@ impl<'a> Parser<'a> {
             }
         }
 
-        Ok(expr)
+        Ok(expr.unwrap_or(Expr::Null))
     }
 }
